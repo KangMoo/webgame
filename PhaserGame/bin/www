@@ -21,6 +21,25 @@ app.set('port', port);
 
 var server = http.createServer(app);
 
+//socket Ελ½Ε
+var io = require('socket.io')(server);
+io.on('connection',(socket)=>{
+  console.log("connected");
+  socket.on('C2S',(data)=>{
+    //console.log(data);
+    //console.log(`(x,y) : ${data.x},${data.y}`);
+    socket.broadcast.emit('S2C',data);
+    //io.emit('S2C',data);
+    //io.emit('S2C',{x:data.x,y:data.y});
+  });
+  
+  socket.on('disconnect',()=>{
+    console.log('disconnected');
+  })
+})
+
+
+
 /**
  * Listen on provided port, on all network interfaces.
  */
