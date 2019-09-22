@@ -4,7 +4,7 @@ var fs = require('fs');
 
 /* GET users listing. */
 router.get('/', function(req, res, next) {
-  res.send('respond with a resource');
+  res.send('respond with a resource helloworld');
 });
 
 module.exports = router;
