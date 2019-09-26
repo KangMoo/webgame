@@ -24,12 +24,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
-app.use('/gameScene',gamesceneRouter);
+app.use('/game',gamesceneRouter);
 app.use('/heeje',heejeRouter);
 
-app.use(express.static('./games/FlappyBird'));
-app.use(express.static('./games/SocketCommunicationTest'));
-app.use(express.static('./games/heeje'));
+//app.use(express.static('./games/FlappyBird'));
+//app.use(express.static('./games/SocketCommunicationTest'));
+//app.use(express.static('./games/heeje'));
+app.use(express.static('./game'));
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

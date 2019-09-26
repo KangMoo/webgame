@@ -1,3 +1,5 @@
+
+
 var config = {
     type: Phaser.AUTO,
     width: 800,
@@ -17,13 +19,17 @@ var config = {
 var socket = io();
 
 var game = new Phaser.Game(config);
+var roomNum;
 var bird;
 var enemy;
 var cursors;
 var enemyInfo = {};
+
+// 家南 烹脚 ~
 socket.on('S2C',(data) => {
     enemyInfo = data;
 });
+// ~ 家南 烹脚
 
 function preload ()
 {
@@ -44,7 +50,6 @@ function isEmpty(obj){
 
 function update()
 {
-    
     bird.setVelocity(0);
     if(isEmpty(enemyInfo) != true)
     {
@@ -70,6 +75,7 @@ function update()
         bird.y += 10;
     }
 
+    // 家南 烹脚 ~
     socket.emit('C2S',bird);
+    // ~ 家南 烹脚
 }
-

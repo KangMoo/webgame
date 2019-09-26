@@ -21,23 +21,33 @@ app.set('port', port);
 
 var server = http.createServer(app);
 
-//socket 통신
+
+// socket 통신 ~
+var roomNum;
+
+//test~
+roomNum=11;
+//~test
+
+
 var io = require('socket.io')(server);
 io.on('connection',(socket)=>{
+  socket.join(roomNum);
   console.log("connected");
+
   socket.on('C2S',(data)=>{
-    //console.log(data);
-    //console.log(`(x,y) : ${data.x},${data.y}`);
-    socket.broadcast.emit('S2C',data);
+    socket.broadcast.to(roomNum).emit('S2C',data);
+    //socket.broadcast.emit('S2C',data);
     //io.emit('S2C',data);
     //io.emit('S2C',{x:data.x,y:data.y});
   });
   
   socket.on('disconnect',()=>{
+    socket.leave(roomNum);
     console.log('disconnected');
   })
 })
-
+// ~ socket 통신
 
 
 /**
