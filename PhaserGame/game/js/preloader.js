@@ -65,11 +65,12 @@ var Preloader = new Phaser.Class({
 		this.loadingbar_bg   = this.add.sprite(400, 300, "loadingbar_bg");
 		this.loadingbar_fill = this.add.sprite(400, 300, "loadingbar_fill");
 		this.setPreloadSprite(this.loadingbar_fill);
-
+		
 		// now load images, audio etc.
 		// sprites, note: see free sprite atlas creation tool here https://www.leshylabs.com/apps/sstool/
+		this.load.atlas('sprite','src/sprites/spritesheet.png','src/sprites/sprites.json')
 		this.load.atlas('sprites', 'img/spritearray.png', 'img/spritearray.json');
-
+		
 		// font
 		this.load.bitmapFont('fontwhite', 'img/fontwhite.png', 'img/fontwhite.xml');
 		
@@ -84,10 +85,211 @@ var Preloader = new Phaser.Class({
 		//	this.load.image('testloading'+i, 'img/spritearray.png');
 		//};
 		// !! TESTING !!
+
+
+		
 	},
 
 	create: function ()
 	{
+
+		this.anims.create({
+			key: 'explosion',
+			frames:[
+				{ key: 'sprite',frame:'animation_explosion1'},
+				{ key: 'sprite',frame:'animation_explosion2'},
+				{ key: 'sprite',frame:'animation_explosion3'},
+				{ key: 'sprite',frame:'animation_explosion4'},
+				{ key: 'sprite',frame:'animation_explosion5'},
+				{ key: 'sprite',frame:'animation_explosion6'},
+				{ key: 'sprite',frame:'animation_explosion7'},
+				{ key: 'sprite',frame:'animation_explosion8'},
+				{ key: 'sprite',frame:'animation_explosion9'},
+				{ key: 'sprite',frame:'animation_explosion10'}
+			],
+			frameRate: 15,
+			hideOnComplete: true,
+			repeat: 0
+		});
+
+		this.anims.create({
+			key:'bomb',
+			frames:[
+				{ key:'sprite',frame:'bomb1'},
+				{ key:'sprite',frame:'bomb2'},
+				{ key:'sprite',frame:'bomb3'}
+			],
+			frameRate:5,
+			yoyo:true,
+			repeat:-1
+		});
+
+		this.anims.create({
+			key:'die',
+			frames:[
+				{ key : 'sprite',frame:'animation_die1'},
+				{ key : 'sprite',frame:'animation_die2'},
+				{ key : 'sprite',frame:'animation_die3'},
+				{ key : 'sprite',frame:'animation_die4'},
+				{ key : 'sprite',frame:'animation_die5'},
+				{ key : 'sprite',frame:'animation_die6'},
+			],
+			frameRate: 5,
+			hideOnComplete: true,
+			repeat: 0
+		});
+
+		//flame_animation
+		this.anims.create({
+			key:'flame_center',
+			frames:[
+				{key:'sprite',frame:'flame1'},
+				{key:'sprite',frame:'flame2'}
+			],
+			frameRate: 2,
+			hideOnComplete: true,
+			repeat: 0
+		});
+		this.anims.create({
+			key:'flame_h',
+			frames:[
+				{key:'sprite',frame:'flame1_horizontal'},
+				{key:'sprite',frame:'flame2_horizontal'}
+			],
+			frameRate: 2,
+			hideOnComplete: true,
+			repeat: 0
+		});
+		this.anims.create({
+			key:'flame_v',
+			frames:[
+				{key:'sprite',frame:'flame1_vertical'},
+				{key:'sprite',frame:'flame2_vertical'}
+			],
+			frameRate: 2,
+			hideOnComplete: true,
+			repeat: 0
+		});
+		this.anims.create({
+			key:'flame_left',
+			frames:[
+				{key:'sprite',frame:'flame1_left'},
+				{key:'sprite',frame:'flame2_left'}
+			],
+			frameRate: 2,
+			hideOnComplete: true,
+			repeat: 0
+		});
+		this.anims.create({
+			key:'flame_right',
+			frames:[
+				{key:'sprite',frame:'flame1_right'},
+				{key:'sprite',frame:'flame2_right'}
+			],
+			frameRate: 2,
+			hideOnComplete: true,
+			repeat: 0
+		});
+		this.anims.create({
+			key:'flame_up',
+			frames:[
+				{key:'sprite',frame:'flame1_up'},
+				{key:'sprite',frame:'flame2_up'}
+			],
+			frameRate: 2,
+			hideOnComplete: true,
+			repeat: 0
+		});
+		this.anims.create({
+			key:'flame_down',
+			frames:[
+				{key:'sprite',frame:'flame1_down'},
+				{key:'sprite',frame:'flame2_down'}
+			],
+			frameRate: 2,
+			hideOnComplete: true,
+			repeat: 0
+		});
+
+		//player_anmiation
+		
+		this.anims.create({
+			key:'player_down_w',
+			frames:[
+				{key:'sprite',frame:'player_37'}
+			],
+			frameRate: 1,
+			repeat: 0
+		});
+		this.anims.create({
+			key:'player_left_w',
+			frames:[
+				{key:'sprite',frame:'player_42'}
+			],
+			frameRate: 1,
+			repeat: 0
+		});
+		this.anims.create({
+			key:'player_right_w',
+			frames:[
+				{key:'sprite',frame:'player_46'}
+			],
+			frameRate: 1,
+			repeat: 0
+		});
+		this.anims.create({
+			key:'player_up_w',
+			frames:[
+				{key:'sprite',frame:'player_50'}
+			],
+			frameRate: 1,
+			repeat: 0
+		});
+		this.anims.create({
+			key:'player_down_walk_w',
+			frames:[
+				{key:'sprite',frame:'player_39'},
+				{key:'sprite',frame:'player_40'},
+				{key:'sprite',frame:'player_41'}
+			],
+			frameRate: 15,
+			yoyo:true,
+			repeat: -1
+		});
+		this.anims.create({
+			key:'player_left_walk_w',
+			frames:[
+				{key:'sprite',frame:'player_44'},
+				{key:'sprite',frame:'player_45'}
+			],
+			frameRate: 15,
+			yoyo:true,
+			repeat: -1
+		});
+		this.anims.create({
+			key:'player_right_walk_w',
+			frames:[
+				{key:'sprite',frame:'player_48'},
+				{key:'sprite',frame:'player_49'}
+			],
+			frameRate: 15,
+			yoyo:true,
+			repeat: -1
+		});
+		this.anims.create({
+			key:'player_up_walk_w',
+			frames:[
+				{key:'sprite',frame:'player_52'},
+				{key:'sprite',frame:'player_53'},
+				{key:'sprite',frame:'player_54'}
+			],
+			frameRate: 15,
+			yoyo:true,
+			repeat: -1
+		});
+		
+		
+
 		// also create animations
 		this.anims.create({
 				key: 'cointurn',

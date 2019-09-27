@@ -27,10 +27,13 @@ class CollectObj extends Phaser.Physics.Arcade.Sprite {
 		if (objtype == TYPE_BOMB) {
 			// bomb
 			this.setFrame('bomb');
-		} else {
+		} else if(objtype == TYPE_COIN) {
 			// coin, play animation with random frame offset, so that coins don't all spin exactly the same way
 			var r = Phaser.Math.RND.between(0, 7);
 			this.play('cointurn', null, r); // key, ignoreIfPlaying = null, startFrame = r; note: animation created in preloader scene
+		}
+		else{
+			this.play('explosion', null, 0);
 		};
 	}
 
