@@ -121,7 +121,8 @@ var Preloader = new Phaser.Class({
 			],
 			frameRate:5,
 			yoyo:true,
-			repeat:-1
+			hideOnComplete: true,
+			repeat:4
 		});
 
 		this.anims.create({
@@ -284,6 +285,84 @@ var Preloader = new Phaser.Class({
 				{key:'sprite',frame:'player_52'},
 				{key:'sprite',frame:'player_53'},
 				{key:'sprite',frame:'player_54'}
+			],
+			frameRate: 5,
+			yoyo:true,
+			repeat: -1
+		});
+		
+		// enemyPlayer
+		this.anims.create({
+			key:'player_down_r',
+			frames:[
+				{key:'sprite',frame:'player_19'}
+			],
+			frameRate: 1,
+			repeat: 0
+		});
+		this.anims.create({
+			key:'player_left_r',
+			frames:[
+				{key:'sprite',frame:'player_24'}
+			],
+			frameRate: 1,
+			repeat: 0
+		});
+		this.anims.create({
+			key:'player_right_r',
+			frames:[
+				{key:'sprite',frame:'player_28'}
+			],
+			frameRate: 1,
+			repeat: 0
+		});
+		this.anims.create({
+			key:'player_up_r',
+			frames:[
+				{key:'sprite',frame:'player_32'}
+			],
+			frameRate: 1,
+			repeat: 0
+		});
+		this.anims.create({
+			key:'player_down_walk_r',
+			frames:[
+				{key:'sprite',frame:'player_21'},
+				{key:'sprite',frame:'player_22'},
+				{key:'sprite',frame:'player_23'}
+			],
+			frameRate: 5,
+			yoyo:true,
+			repeat: -1
+		});
+		this.anims.create({
+			key:'player_left_walk_r',
+			frames:[
+				{key:'sprite',frame:'player_26'},
+				{key:'sprite',frame:'player_24'},
+				{key:'sprite',frame:'player_27'}
+			],
+			frameRate: 5,
+			yoyo:true,
+			repeat: -1
+		});
+		this.anims.create({
+			key:'player_right_walk_r',
+			frames:[
+				{key:'sprite',frame:'player_30'},
+				{key:'sprite',frame:'player_28'},
+				{key:'sprite',frame:'player_31'}
+			],
+			frameRate: 5,
+			yoyo:true,
+			repeat: -1
+		});
+		this.anims.create({
+			key:'player_up_walk_r',
+			frames:[
+				{key:'sprite',frame:'player_34'},
+				{key:'sprite',frame:'player_35'},
+				{key:'sprite',frame:'player_36'}
 			],
 			frameRate: 5,
 			yoyo:true,

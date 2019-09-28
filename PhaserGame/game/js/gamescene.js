@@ -10,6 +10,7 @@ var DIR_RIGHT = 8;
 
 var STATE_IDLE = 1;
 var STATE_WALK = 2;
+var STATE_DIE = 4;
 
 var GameScene = new Phaser.Class({
 
@@ -23,10 +24,17 @@ var GameScene = new Phaser.Class({
 
 
 	preload: function () {
-
 	},
 
 	create: function () {
+
+		//map setting
+		this.fTiles = this.add.group();
+		this.cTiles = this.physics.add.group({immovable:true});
+		this.bTiles = this.physics.add.group({immovable:true});
+		this.setTileMap();
+
+
 		this.playerInfo = {
 			dir:DIR_DOWN,
 			state:STATE_IDLE,
@@ -37,13 +45,13 @@ var GameScene = new Phaser.Class({
 			x:0,y:0
 		};
 		
-		this.player = this.physics.add.sprite(50, 300, 'sprite');
+		this.player = this.physics.add.sprite(50, 50, 'sprite');
 		this.player.anims.load();
 		this.player.setSize(30,25).setOffset(15,64);
 		//this.player.setSize(50,45).setOffset(5,49);
 		this.player.setCollideWorldBounds(true);
 		
-
+		
 		
 
 		// add player sprite
@@ -70,7 +78,10 @@ var GameScene = new Phaser.Class({
 
 
 		this.bombs = this.physics.add.group({immovable:true});
+
 		this.physics.add.collider(this.player,this.bombs);
+		this.physics.add.collider(this.player,[this.cTiles,this.bTiles,this.bombs]);
+
 		this.setBomb(300,300,1);
 		this.setBomb(350,345,1);
 		this.setBomb(400,300,1);
@@ -116,6 +127,7 @@ var GameScene = new Phaser.Class({
 		// set up arcade physics, using `physics` requires "physics:{default: 'arcade'" when starting "new Phaser.Game(.."
 		this.physics.add.overlap(this.dude, this.gameitems, this.doOverlapItem, null, this);
 
+		this.physics.add.overlap(this.bombs, this.bombs, this.overlapBombs, null, this);
 		// player input
 		this.cursors = this.input.keyboard.createCursorKeys();
 
@@ -167,6 +179,7 @@ var GameScene = new Phaser.Class({
 			this.player.anims.play('player_right_walk_w',true);
 		}
 
+		this.playerInfo.state=STATE_WALK;
 		//var test = this.scene.getBounds();
 		// check limits
 		if (this.player.y < 0)   this.player.y = 0;
@@ -191,14 +204,20 @@ var GameScene = new Phaser.Class({
 		{
 			this.player.anims.play('player_right_w',true);
 		}
+		this.playerInfo.state=STATE_IDLE;
 	},
-	explode: function (x, y, scale) {
-
-		var temp = this.physics.add.sprite(x, y, 'sprite').setScale(1).anims.load('die');
+	//explode: function (x, y, scale) {
+	//	var temp = this.add.sprite(x, y, 'sprite').setScale(1).anims.load('die');
+	//	temp.play('die');
+	//	temp = this.add.sprite(x, y, 'sprite').setScale(1).anims.load('explosion');
+	//	temp.play('explosion');
+	//},
+	explode: function (x,y,scale) {
+		
+		var temp = this.add.sprite(x, y, 'sprite').setScale(1).anims.load('die');
 		temp.play('die');
 		temp = this.add.sprite(x, y, 'sprite').setScale(1).anims.load('explosion');
 		temp.play('explosion');
-
 	},
 
 	doBack: function () {
@@ -207,17 +226,82 @@ var GameScene = new Phaser.Class({
 		//this.scene.start('mainmenu');
 	},
 	setBomb:function(x,y,pow){
+		console.log(`${x},${y}`);
+		x = parseInt(x/50)*50 + 25;
+		y = parseInt(y/45)*45 + 45/2;
+
+
 		this.temp = this.physics.add.sprite(x, y, 'sprite').setScale(1);
-		
+		//this.temp.on('animationcomplete',this.explode,this);
+		this.temp.on('animationcomplete',(cuuurentAnim, currentFrmae, sprite)=>{
+			console.log(sprite);
+			this.explode(sprite.x,sprite.y,1);
+			sprite.body.destroy();
+		});
 		this.temp.anims.load('bomb');
 		this.temp.anims.play('bomb');
 		this.temp.setSize(50,45).setOffset(0,0);
 
 		this.bombs.add(this.temp);
+		this.player.setDepth(1);
 	},
+
+	overlapBombs:function(b1,b2)
+	{
+		b2.destroy();
+	},
+
 	playerInfoUpdate:function(){
 		this.playerInfo.x = this.player.x;
-		this.playerInfo.y = this.player.y;
+		this.playerInfo.y = this.player.y+28;
+	},
+
+	setTileMap:function()
+	{
+		const level = [
+			[3,3,3,3,3,3,3,3,3,3,3,3,3],
+			[3,0,0,0,1,0,1,1,1,0,0,0,3],
+			[3,0,3,1,3,1,3,1,3,1,3,0,3],
+			[3,0,1,1,1,1,1,1,0,1,1,0,3],
+			[3,1,3,1,3,1,3,1,3,1,3,1,3],
+			[3,1,1,0,1,1,1,1,0,1,1,1,3],
+			[3,1,3,1,3,1,3,1,3,1,3,0,3],
+			[3,1,1,1,0,1,0,1,1,0,1,1,3],
+			[3,1,3,1,3,1,3,1,3,1,3,1,3],
+			[3,0,1,1,0,1,1,1,0,1,1,1,3],
+			[3,1,3,1,3,1,3,1,3,1,3,1,3],
+			[3,0,1,0,1,1,1,0,1,1,1,0,3],
+			[3,0,3,1,3,1,3,1,3,1,3,0,3],
+			[3,0,0,0,1,1,0,1,1,0,0,0,3],
+			[3,3,3,3,3,3,3,3,3,3,3,3,3]
+		];
+
+		for(var i =0 ; i<15;i++)
+		{
+			for(var j = 0 ; j<13; j++)
+			{
+				
+				this.temp = this.physics.add.image(i*50+25, j*45+23, 'sprite', 'tile_env2_floor').setOffset(0,0);
+				this.temp.setSize(50,45);
+				this.fTiles.add(this.temp);
+				if(level[i][j] == 0)
+				{
+					
+				}
+				else if(level[i][j] ==1)
+				{
+					this.temp = this.physics.add.image(i*50+25, j*45+23, 'sprite', 'tile_env2_block').setOffset(0,0);
+					this.temp.setSize(50,45,true);
+					this.bTiles.add(this.temp);
+				}
+				else if(level[i][j] ==3)
+				{
+					this.temp = this.physics.add.image(i*50+25, j*45+23, 'sprite', 'tile_env2_wall').setOffset(0,0);
+					this.temp.setSize(50,45,true);
+					this.cTiles.add(this.temp);
+				}
+			}
+		}
 	}
 
 });
