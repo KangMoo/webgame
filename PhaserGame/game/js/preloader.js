@@ -252,7 +252,7 @@ var Preloader = new Phaser.Class({
 				{key:'sprite',frame:'player_40'},
 				{key:'sprite',frame:'player_41'}
 			],
-			frameRate: 15,
+			frameRate: 5,
 			yoyo:true,
 			repeat: -1
 		});
@@ -260,9 +260,10 @@ var Preloader = new Phaser.Class({
 			key:'player_left_walk_w',
 			frames:[
 				{key:'sprite',frame:'player_44'},
+				{key:'sprite',frame:'player_42'},
 				{key:'sprite',frame:'player_45'}
 			],
-			frameRate: 15,
+			frameRate: 5,
 			yoyo:true,
 			repeat: -1
 		});
@@ -270,9 +271,10 @@ var Preloader = new Phaser.Class({
 			key:'player_right_walk_w',
 			frames:[
 				{key:'sprite',frame:'player_48'},
+				{key:'sprite',frame:'player_46'},
 				{key:'sprite',frame:'player_49'}
 			],
-			frameRate: 15,
+			frameRate: 5,
 			yoyo:true,
 			repeat: -1
 		});
@@ -283,7 +285,7 @@ var Preloader = new Phaser.Class({
 				{key:'sprite',frame:'player_53'},
 				{key:'sprite',frame:'player_54'}
 			],
-			frameRate: 15,
+			frameRate: 5,
 			yoyo:true,
 			repeat: -1
 		});

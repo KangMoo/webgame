@@ -33,17 +33,25 @@ var GameScene = new Phaser.Class({
 			bombcount:1,
 			bombpow:1,
 			speed:3,
-			ability:0
+			ability:0,
+			x:0,y:0
 		};
 		
-		this.player = this.physics.add.sprite(100, 200, 'sprite');
+		this.player = this.physics.add.sprite(50, 300, 'sprite');
 		this.player.anims.load();
+		this.player.setSize(30,25).setOffset(15,64);
+		//this.player.setSize(50,45).setOffset(5,49);
 		this.player.setCollideWorldBounds(true);
+		
+
+		
+
 		// add player sprite
 		this.dude = this.physics.add.image(400, 200, 'sprites', 'dude');
 		//this.dude = this.add.sprite(400, 200, 'sprites', 'dude');
+		
 
-		this.dude.setCollideWorldBounds(true);
+		//this.dude.setCollideWorldBounds(true);
 
 		// add random coins and bombs
 		this.gameitems = this.physics.add.group();
@@ -60,12 +68,12 @@ var GameScene = new Phaser.Class({
 			this.gameitems.add(newobj);
 		}
 
-		var temp = this.add.sprite(300, 300, 'sprite').setScale(1);
-		temp.anims.load('bomb');
-		temp.anims.play('bomb');
 
-
-
+		this.bombs = this.physics.add.group({immovable:true});
+		this.physics.add.collider(this.player,this.bombs);
+		this.setBomb(300,300,1);
+		this.setBomb(350,345,1);
+		this.setBomb(400,300,1);
 		// coin particles
 		var sparks = this.add.particles('sprites');
 		this.coinspark = sparks.createEmitter({
@@ -116,34 +124,47 @@ var GameScene = new Phaser.Class({
 	},
 
 	update: function (time, delta) {
+		//this.bombs.setVelocity(0);
 		this.player.setVelocity(0);
 		if (this.cursors.up.isDown)    this.movePlayer(DIR_UP);
 		else if (this.cursors.down.isDown)  this.movePlayer(DIR_DOWN);
-		if (this.cursors.left.isDown)  this.movePlayer(DIR_LEFT);
+		else if (this.cursors.left.isDown)  this.movePlayer(DIR_LEFT);
 		else if (this.cursors.right.isDown) this.movePlayer(DIR_RIGHT);
+		else this.playerStop(this.playerInfo.dir);
+
+		if(this.cursors.space.isDown)
+		{
+			this.setBomb(this.playerInfo.x,this.playerInfo.y,this.playerInfo.pow);
+		}
+
+		this.playerInfoUpdate();
 	},
 
 	movePlayer: function (dir) {
 
 		if (dir == DIR_UP)    
 		{
-			this.player.y -= 2;
+			this.player.setVelocityY(-100);
 			this.playerInfo.dir=DIR_UP;
+			this.player.anims.play('player_up_walk_w',true);
 		}
 		else if (dir == DIR_DOWN)  
 		{
-			this.player.y += 2;
+			this.player.setVelocityY(100);
 			this.playerInfo.dir=DIR_DOWN;
+			this.player.anims.play('player_down_walk_w',true);
 		}
 		if (dir == DIR_LEFT)  
 		{
-			this.player.x -= 2;
+			this.player.setVelocityX(-100);
 			this.playerInfo.dir=DIR_LEFT;
+			this.player.anims.play('player_left_walk_w',true);
 		}
 		else if (dir == DIR_RIGHT) 
 		{
-			this.player.x += 2;
+			this.player.setVelocityX(100);
 			this.playerInfo.dir=DIR_RIGHT;
+			this.player.anims.play('player_right_walk_w',true);
 		}
 
 		//var test = this.scene.getBounds();
@@ -153,10 +174,27 @@ var GameScene = new Phaser.Class({
 		if (this.player.x < 0)   this.player.x = 0;
 		if (this.player.x > 800) this.player.x = 800;
 	},
-
+	playerStop: function(dir){
+		if (dir == DIR_UP)    
+		{
+			this.player.anims.play('player_up_w',true);
+		}
+		else if (dir == DIR_DOWN)  
+		{
+			this.player.anims.play('player_down_w',true);
+		}
+		if (dir == DIR_LEFT)  
+		{
+			this.player.anims.play('player_left_w',true);
+		}
+		else if (dir == DIR_RIGHT) 
+		{
+			this.player.anims.play('player_right_w',true);
+		}
+	},
 	explode: function (x, y, scale) {
 
-		var temp = this.add.sprite(x, y, 'sprite').setScale(1).anims.load('die');
+		var temp = this.physics.add.sprite(x, y, 'sprite').setScale(1).anims.load('die');
 		temp.play('die');
 		temp = this.add.sprite(x, y, 'sprite').setScale(1).anims.load('explosion');
 		temp.play('explosion');
@@ -167,7 +205,19 @@ var GameScene = new Phaser.Class({
 		this.explode(Phaser.Math.RND.between(0, 800), Phaser.Math.RND.between(0, 800), Phaser.Math.RND.between(1, 5));
 		console.log('gamescene doBack was called!');
 		//this.scene.start('mainmenu');
-	}
+	},
+	setBomb:function(x,y,pow){
+		this.temp = this.physics.add.sprite(x, y, 'sprite').setScale(1);
+		
+		this.temp.anims.load('bomb');
+		this.temp.anims.play('bomb');
+		this.temp.setSize(50,45).setOffset(0,0);
 
+		this.bombs.add(this.temp);
+	},
+	playerInfoUpdate:function(){
+		this.playerInfo.x = this.player.x;
+		this.playerInfo.y = this.player.y;
+	}
 
 });
