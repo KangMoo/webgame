@@ -35,19 +35,17 @@ var GameScene = new Phaser.Class({
 		this.setTileMap();
 
 
-		this.playerInfo = {
-			dir:DIR_DOWN,
+		// add player sprite
+		this.player = this.physics.add.sprite(50, 50, 'sprite');
+		this.player.anims.load();
+		this.player.setSize(30,25).setOffset(15,64);
+		this.player.Info = {dir:DIR_DOWN,
 			state:STATE_IDLE,
 			bombcount:1,
 			bombpow:1,
 			speed:3,
 			ability:0,
-			x:0,y:0
-		};
-		
-		this.player = this.physics.add.sprite(50, 50, 'sprite');
-		this.player.anims.load();
-		this.player.setSize(30,25).setOffset(15,64);
+			x:0,y:0};
 		//this.player.setSize(50,45).setOffset(5,49);
 		this.player.setCollideWorldBounds(true);
 		
@@ -76,12 +74,15 @@ var GameScene = new Phaser.Class({
 			this.gameitems.add(newobj);
 		}
 
+		this.flames = this.physics.add.group({immovable:true});
 
 		this.bombs = this.physics.add.group({immovable:true});
-
-		this.physics.add.collider(this.player,this.bombs);
-		this.physics.add.collider(this.player,[this.cTiles,this.bTiles,this.bombs]);
-
+		this.bombs_e = this.physics.add.group({immovable:true});
+		
+		//this.physics.add.collider(this.player,this.bombs);
+		//this.physics.add.collider(this.player,this.bombs_e);
+		this.physics.add.collider(this.player,[this.cTiles,this.bTiles,this.bombs,this.bombs_e]);
+		
 		this.setBomb(300,300,1);
 		this.setBomb(350,345,1);
 		this.setBomb(400,300,1);
@@ -128,9 +129,10 @@ var GameScene = new Phaser.Class({
 		this.physics.add.overlap(this.dude, this.gameitems, this.doOverlapItem, null, this);
 
 		this.physics.add.overlap(this.bombs, this.bombs, this.overlapBombs, null, this);
+
 		// player input
 		this.cursors = this.input.keyboard.createCursorKeys();
-
+		this.spacebar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 		// quit to menu button
 		this.btnquit = this.addButton(760, 40, 'sprites', this.doBack, this, 'btn_close_hl', 'btn_close', 'btn_close_hl', 'btn_close');
 	},
@@ -142,13 +144,15 @@ var GameScene = new Phaser.Class({
 		else if (this.cursors.down.isDown)  this.movePlayer(DIR_DOWN);
 		else if (this.cursors.left.isDown)  this.movePlayer(DIR_LEFT);
 		else if (this.cursors.right.isDown) this.movePlayer(DIR_RIGHT);
-		else this.playerStop(this.playerInfo.dir);
+		else this.playerStop(this.player.Info.dir);
 
-		if(this.cursors.space.isDown)
+		
+		if(Phaser.Input.Keyboard.JustDown(this.spacebar)&& this.player.Info.bombcount > this.bombs.children.size)
 		{
-			this.setBomb(this.playerInfo.x,this.playerInfo.y,this.playerInfo.pow);
+			//this.chkCanBeBomb();
+			this.setBomb(this.player.Info.x,this.player.Info.y,this.player.Info.pow);
 		}
-
+		
 		this.playerInfoUpdate();
 	},
 
@@ -157,29 +161,29 @@ var GameScene = new Phaser.Class({
 		if (dir == DIR_UP)    
 		{
 			this.player.setVelocityY(-100);
-			this.playerInfo.dir=DIR_UP;
+			this.player.Info.dir=DIR_UP;
 			this.player.anims.play('player_up_walk_w',true);
 		}
 		else if (dir == DIR_DOWN)  
 		{
 			this.player.setVelocityY(100);
-			this.playerInfo.dir=DIR_DOWN;
+			this.player.Info.dir=DIR_DOWN;
 			this.player.anims.play('player_down_walk_w',true);
 		}
 		if (dir == DIR_LEFT)  
 		{
 			this.player.setVelocityX(-100);
-			this.playerInfo.dir=DIR_LEFT;
+			this.player.Info.dir=DIR_LEFT;
 			this.player.anims.play('player_left_walk_w',true);
 		}
 		else if (dir == DIR_RIGHT) 
 		{
 			this.player.setVelocityX(100);
-			this.playerInfo.dir=DIR_RIGHT;
+			this.player.Info.dir=DIR_RIGHT;
 			this.player.anims.play('player_right_walk_w',true);
 		}
 
-		this.playerInfo.state=STATE_WALK;
+		this.player.Info.state=STATE_WALK;
 		//var test = this.scene.getBounds();
 		// check limits
 		if (this.player.y < 0)   this.player.y = 0;
@@ -204,24 +208,52 @@ var GameScene = new Phaser.Class({
 		{
 			this.player.anims.play('player_right_w',true);
 		}
-		this.playerInfo.state=STATE_IDLE;
+		this.player.Info.state=STATE_IDLE;
 	},
-	//explode: function (x, y, scale) {
-	//	var temp = this.add.sprite(x, y, 'sprite').setScale(1).anims.load('die');
-	//	temp.play('die');
-	//	temp = this.add.sprite(x, y, 'sprite').setScale(1).anims.load('explosion');
-	//	temp.play('explosion');
-	//},
-	explode: function (x,y,scale) {
+
+	explode: function (x,y,power) {
+		//flamesize calculate
+		x = parseInt(x/50)*50 + 25;
+		y = parseInt(y/45)*45 + 45/2;
+		var sU,sD,sL,sR;
 		
-		var temp = this.add.sprite(x, y, 'sprite').setScale(1).anims.load('die');
-		temp.play('die');
-		temp = this.add.sprite(x, y, 'sprite').setScale(1).anims.load('explosion');
-		temp.play('explosion');
+		
+		for(var i=0;i<power;i++)
+		{
+			var flame = this.physics.add.sprite(x, y, 'sprite').setScale(1);	
+			flame.setSize(48,43).setOffset(1,1);
+			flame.createdTime = this.time.now;
+			flame.on('animationcomplete',(cuuurentAnim, currentFrmae, sprite)=>{
+				this.tweens.add({
+					targets: flame,
+					duration: 200,
+					alpha: 0
+				});
+				//flame.destroy();
+			});
+			flame.anims.load('flame_center');
+			flame.anims.play('flame_center');
+			this.flames.add(flame);
+		}
+
+		console.log('flames:');
+		console.log(this.flames);
+		//for(var i=0;i<y;i++)
+		//{
+		//	var flame = this.add.sprite(x, y, 'sprite').setScale(1).anims.load('explosion');
+		//}
+
+
+		this.player.setDepth(1);
+		//var temp = this.add.sprite(x, y, 'sprite').setScale(1).anims.load('die');
+		//temp.play('die');
+		//var temp = this.add.sprite(x, y, 'sprite').setScale(1).anims.load('explosion');
+		//temp.play('explosion');
+		
 	},
 
 	doBack: function () {
-		this.explode(Phaser.Math.RND.between(0, 800), Phaser.Math.RND.between(0, 800), Phaser.Math.RND.between(1, 5));
+		this.explode(Phaser.Math.RND.between(0, 800), Phaser.Math.RND.between(0, 800), 1);//Phaser.Math.RND.between(1, 5));
 		console.log('gamescene doBack was called!');
 		//this.scene.start('mainmenu');
 	},
@@ -230,30 +262,31 @@ var GameScene = new Phaser.Class({
 		x = parseInt(x/50)*50 + 25;
 		y = parseInt(y/45)*45 + 45/2;
 
-
-		this.temp = this.physics.add.sprite(x, y, 'sprite').setScale(1);
-		//this.temp.on('animationcomplete',this.explode,this);
-		this.temp.on('animationcomplete',(cuuurentAnim, currentFrmae, sprite)=>{
-			console.log(sprite);
-			this.explode(sprite.x,sprite.y,1);
-			sprite.body.destroy();
+		var temp = this.physics.add.sprite(x, y, 'sprite').setScale(1);
+		temp.power=this.player.Info.bombpow;
+		temp.name=this.time.now;
+		temp.on('animationcomplete',(cuuurentAnim, currentFrmae, sprite)=>{
+			
+			this.explode(sprite.x,sprite.y,temp.power);
+			temp.destroy();
 		});
-		this.temp.anims.load('bomb');
-		this.temp.anims.play('bomb');
-		this.temp.setSize(50,45).setOffset(0,0);
+		temp.setSize(50,45).setOffset(0,0);
+		temp.anims.load('bomb');
+		temp.anims.play('bomb');
+		
 
-		this.bombs.add(this.temp);
+		this.bombs.add(temp);
 		this.player.setDepth(1);
 	},
-
+	
 	overlapBombs:function(b1,b2)
 	{
 		b2.destroy();
 	},
 
 	playerInfoUpdate:function(){
-		this.playerInfo.x = this.player.x;
-		this.playerInfo.y = this.player.y+28;
+		this.player.Info.x = this.player.x;
+		this.player.Info.y = this.player.y+28;
 	},
 
 	setTileMap:function()
@@ -302,6 +335,10 @@ var GameScene = new Phaser.Class({
 				}
 			}
 		}
+	},
+	enemyPlayerRender:function(enemyPlayerInfo){
+
 	}
+
 
 });

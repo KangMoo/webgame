@@ -147,9 +147,10 @@ var Preloader = new Phaser.Class({
 				{key:'sprite',frame:'flame1'},
 				{key:'sprite',frame:'flame2'}
 			],
-			frameRate: 2,
-			hideOnComplete: true,
-			repeat: 0
+			frameRate: 10,
+			yoyo:true,
+			//hideOnComplete: true,
+			repeat: 2
 		});
 		this.anims.create({
 			key:'flame_h',
@@ -157,9 +158,10 @@ var Preloader = new Phaser.Class({
 				{key:'sprite',frame:'flame1_horizontal'},
 				{key:'sprite',frame:'flame2_horizontal'}
 			],
-			frameRate: 2,
-			hideOnComplete: true,
-			repeat: 0
+			frameRate: 10,
+			yoyo:true,
+			//hideOnComplete: true,
+			repeat: 2
 		});
 		this.anims.create({
 			key:'flame_v',
@@ -167,9 +169,10 @@ var Preloader = new Phaser.Class({
 				{key:'sprite',frame:'flame1_vertical'},
 				{key:'sprite',frame:'flame2_vertical'}
 			],
-			frameRate: 2,
-			hideOnComplete: true,
-			repeat: 0
+			frameRate: 10,
+			yoyo:true,
+			//hideOnComplete: true,
+			repeat: 2
 		});
 		this.anims.create({
 			key:'flame_left',
@@ -177,9 +180,10 @@ var Preloader = new Phaser.Class({
 				{key:'sprite',frame:'flame1_left'},
 				{key:'sprite',frame:'flame2_left'}
 			],
-			frameRate: 2,
-			hideOnComplete: true,
-			repeat: 0
+			frameRate: 10,
+			yoyo:true,
+			//hideOnComplete: true,
+			repeat: 2
 		});
 		this.anims.create({
 			key:'flame_right',
@@ -187,9 +191,10 @@ var Preloader = new Phaser.Class({
 				{key:'sprite',frame:'flame1_right'},
 				{key:'sprite',frame:'flame2_right'}
 			],
-			frameRate: 2,
-			hideOnComplete: true,
-			repeat: 0
+			frameRate: 10,
+			yoyo:true,
+			//hideOnComplete: true,
+			repeat: 2
 		});
 		this.anims.create({
 			key:'flame_up',
@@ -197,9 +202,10 @@ var Preloader = new Phaser.Class({
 				{key:'sprite',frame:'flame1_up'},
 				{key:'sprite',frame:'flame2_up'}
 			],
-			frameRate: 2,
-			hideOnComplete: true,
-			repeat: 0
+			frameRate: 10,
+			yoyo:true,
+			//hideOnComplete: true,
+			repeat: 2
 		});
 		this.anims.create({
 			key:'flame_down',
@@ -207,9 +213,10 @@ var Preloader = new Phaser.Class({
 				{key:'sprite',frame:'flame1_down'},
 				{key:'sprite',frame:'flame2_down'}
 			],
-			frameRate: 2,
-			hideOnComplete: true,
-			repeat: 0
+			frameRate: 10,
+			yoyo:true,
+			//hideOnComplete: true,
+			repeat: 2
 		});
 
 		//player_anmiation
