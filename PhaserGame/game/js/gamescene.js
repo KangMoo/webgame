@@ -3,14 +3,18 @@
 // Phaser3 example game
 // main game scene
 
-var DIR_UP = 1;
-var DIR_DOWN = 2;
-var DIR_LEFT = 4;
-var DIR_RIGHT = 8;
+const DIR_UP = 1;
+const DIR_DOWN = 2;
+const DIR_LEFT = 4;
+const DIR_RIGHT = 8;
 
-var STATE_IDLE = 1;
-var STATE_WALK = 2;
-var STATE_DIE = 4;
+const STATE_IDLE = 1;
+const STATE_WALK = 2;
+const STATE_DIE = 4;
+
+const TILE_SIZE_X = 50;
+const TILE_SIZE_Y = 45;
+
 
 var GameScene = new Phaser.Class({
 
@@ -34,9 +38,10 @@ var GameScene = new Phaser.Class({
 		this.bTiles = this.physics.add.group({immovable:true});
 		this.setTileMap();
 
+		
 
 		// add player sprite
-		this.player = this.physics.add.sprite(50, 50, 'sprite');
+		this.player = this.physics.add.sprite(TILE_SIZE_X+TILE_SIZE_X/2, TILE_SIZE_Y, 'sprite');
 		this.player.anims.load();
 		this.player.setSize(30,25).setOffset(15,64);
 		this.player.Info = {dir:DIR_DOWN,
@@ -48,9 +53,7 @@ var GameScene = new Phaser.Class({
 			x:0,y:0};
 		//this.player.setSize(50,45).setOffset(5,49);
 		this.player.setCollideWorldBounds(true);
-		
-		
-		
+		console.log(this);
 
 		// add player sprite
 		this.dude = this.physics.add.image(400, 200, 'sprites', 'dude');
@@ -146,7 +149,6 @@ var GameScene = new Phaser.Class({
 		else if (this.cursors.right.isDown) this.movePlayer(DIR_RIGHT);
 		else this.playerStop(this.player.Info.dir);
 
-		
 		if(Phaser.Input.Keyboard.JustDown(this.spacebar)&& this.player.Info.bombcount > this.bombs.children.size)
 		{
 			//this.chkCanBeBomb();
@@ -213,36 +215,59 @@ var GameScene = new Phaser.Class({
 
 	explode: function (x,y,power) {
 		//flamesize calculate
-		x = parseInt(x/50)*50 + 25;
-		y = parseInt(y/45)*45 + 45/2;
-		var sU,sD,sL,sR;
 		
+		x = parseInt(x/TILE_SIZE_X)*TILE_SIZE_X;
+		y = parseInt(y/TILE_SIZE_Y)*TILE_SIZE_Y;
 		
-		for(var i=0;i<power;i++)
+		console.log('explode',x,y);
+		this.makeFlame(x+TILE_SIZE_X/2,y+TILE_SIZE_X/2,'flame_center');
+		//makeArm
+		this.makeArm(x,y,power,DIR_UP);
+		this.makeArm(x,y,power,DIR_LEFT);
+		this.makeArm(x,y,power,DIR_RIGHT);
+		this.makeArm(x,y,power,DIR_DOWN);
+
+		/*
+		for(var i=-power;i<=power;i++)
 		{
-			var flame = this.physics.add.sprite(x, y, 'sprite').setScale(1);	
-			flame.setSize(48,43).setOffset(1,1);
-			flame.createdTime = this.time.now;
-			flame.on('animationcomplete',(cuuurentAnim, currentFrmae, sprite)=>{
-				this.tweens.add({
-					targets: flame,
-					duration: 200,
-					alpha: 0
-				});
-				//flame.destroy();
-			});
-			flame.anims.load('flame_center');
-			flame.anims.play('flame_center');
-			this.flames.add(flame);
+			if(i==0) continue;
+			var posx = x + TILE_SIZE_X*i;
+			var posy = y;
+			if(this.flametileChk(posx,posy) == 3) continue;
+			if(i==-power)
+				this.makeFlame(posx,posy,'flame_left');
+			else if(i==power)
+				this.makeFlame(posx,posy,'flame_right');
+			else
+			{
+				if(this.flametileChk(posx,posy) == 1)
+				{
+					if(i<0) {
+						this.makeFlame(posx,posy,'flame_left');
+						i =1;
+						continue;
+					}
+					if(i>0) {
+						break;
+					}
+				}
+				this.makeFlame(posx,posy,'flame_h');
+			}
+				
 		}
-
-		console.log('flames:');
-		console.log(this.flames);
-		//for(var i=0;i<y;i++)
-		//{
-		//	var flame = this.add.sprite(x, y, 'sprite').setScale(1).anims.load('explosion');
-		//}
-
+		for(var i=-power;i<=power;i++)
+		{
+			if(i==0) continue;
+			var posx = x;
+			var posy = y +TILE_SIZE_Y*i;
+			if(i==-power)
+			this.makeFlame(posx,posy,'flame_up');
+			else if(i==power)
+			this.makeFlame(posx,posy,'flame_down');
+			else
+			this.makeFlame(posx,posy,'flame_v');
+		}
+		*/
 
 		this.player.setDepth(1);
 		//var temp = this.add.sprite(x, y, 'sprite').setScale(1).anims.load('die');
@@ -251,16 +276,112 @@ var GameScene = new Phaser.Class({
 		//temp.play('explosion');
 		
 	},
+	makeArm:function(x,y,pow,dir){
+		
+		for(var i = 1; i<=pow;i++)
+		{
+			var px = x;
+			var py = y;
+			if(dir == DIR_UP){
+				py -= i*TILE_SIZE_Y;
+				var chk = this.flametileChk(px,py);
+				if(chk == 3) break;
+				if(chk==1)
+				{
+					this.makeFlame(px+TILE_SIZE_X/2,py+TILE_SIZE_Y/2,'flame_up');
+					break;
+				}
+				if(i ==pow)
+				{
+					this.makeFlame(px+TILE_SIZE_X/2,py+TILE_SIZE_Y/2,'flame_up');
+					break;
+				}
+				this.makeFlame(px+TILE_SIZE_X/2,py+TILE_SIZE_Y/2,'flame_h');
+			}
+			else if(dir=== DIR_LEFT){
+				px -= i*TILE_SIZE_X;
+				var chk = this.flametileChk(px,py);
+				if(chk == 3) break;
+				if(chk==1)
+				{
+					this.makeFlame(px+TILE_SIZE_X/2,py+TILE_SIZE_Y/2,'flame_left');
+					break;
+				}
+				if(i ==pow)
+				{
+					this.makeFlame(px+TILE_SIZE_X/2,py+TILE_SIZE_Y/2,'flame_left');
+					break;
+				}
+				this.makeFlame(px+TILE_SIZE_X/2,py+TILE_SIZE_Y/2,'flame_v');
+			}
+			else if(dir== DIR_RIGHT){
+				px +=i*TILE_SIZE_X;
+				var chk = this.flametileChk(px,py);
+				if(chk == 3) break;
+				if(chk==1)
+				{
+					this.makeFlame(px+TILE_SIZE_X/2,py+TILE_SIZE_Y/2,'flame_right');
+					break;
+				}
+				if(i ==pow)
+				{
+					this.makeFlame(px+TILE_SIZE_X/2,py+TILE_SIZE_Y/2,'flame_right');
+					break;
+				}
+				this.makeFlame(px+TILE_SIZE_X/2,py+TILE_SIZE_Y/2,'flame_v');
+			}
+			else if(dir == DIR_DOWN){
+				py += i*TILE_SIZE_Y;
+				var chk = this.flametileChk(px,py);
+				if(chk == 3) break;
+				if(chk==1)
+				{
+					this.makeFlame(px+TILE_SIZE_X/2,py+TILE_SIZE_Y/2,'flame_down');
+					break;
+				}
+				if(i ==pow)
+				{
+					this.makeFlame(px+TILE_SIZE_X/2,py+TILE_SIZE_Y/2,'flame_down');
+					break;
+				}	
+				this.makeFlame(px+TILE_SIZE_X/2,py+TILE_SIZE_Y/2,'flame_h');
+			}
+		}
+	},
 
+	makeFlame:function(x,y,flamedir){
+
+		var flame = this.physics.add.sprite(x, y, 'sprite').setScale(1);	
+		flame.setSize(TILE_SIZE_X-2,TILE_SIZE_Y-2).setOffset(1,1);
+		flame.createdTime = this.time.now;
+		flame.on('animationcomplete',(cuuurentAnim, currentFrmae, sprite)=>{
+			this.tweens.add({
+				targets: flame,
+				duration: 100,
+				alpha: 0,
+				onComplete:()=>{flame.destroy();}
+			});
+		});
+		flame.anims.load(flamedir);
+		flame.anims.play(flamedir);
+		
+		this.flames.add(flame);
+	},
+	flametileChk:function(x,y){
+		console.log('flametileChk:');
+		console.log(x,y);
+		console.log(parseInt(x/TILE_SIZE_X),parseInt(y/TILE_SIZE_Y));
+		return this.TILES[parseInt(x/TILE_SIZE_X)][parseInt(y/TILE_SIZE_Y)]
+	},
 	doBack: function () {
+		
 		this.explode(Phaser.Math.RND.between(0, 800), Phaser.Math.RND.between(0, 800), 1);//Phaser.Math.RND.between(1, 5));
 		console.log('gamescene doBack was called!');
 		//this.scene.start('mainmenu');
 	},
 	setBomb:function(x,y,pow){
-		console.log(`${x},${y}`);
-		x = parseInt(x/50)*50 + 25;
-		y = parseInt(y/45)*45 + 45/2;
+		x = parseInt(x/TILE_SIZE_X)*TILE_SIZE_X + TILE_SIZE_X/2;
+		y = parseInt(y/TILE_SIZE_Y)*TILE_SIZE_Y + TILE_SIZE_Y/2;
 
 		var temp = this.physics.add.sprite(x, y, 'sprite').setScale(1);
 		temp.power=this.player.Info.bombpow;
@@ -270,7 +391,7 @@ var GameScene = new Phaser.Class({
 			this.explode(sprite.x,sprite.y,temp.power);
 			temp.destroy();
 		});
-		temp.setSize(50,45).setOffset(0,0);
+		temp.setSize(TILE_SIZE_X,TILE_SIZE_Y).setOffset(0,0);
 		temp.anims.load('bomb');
 		temp.anims.play('bomb');
 		
@@ -291,7 +412,7 @@ var GameScene = new Phaser.Class({
 
 	setTileMap:function()
 	{
-		const level = [
+		this.TILES = [
 			[3,3,3,3,3,3,3,3,3,3,3,3,3],
 			[3,0,0,0,1,0,1,1,1,0,0,0,3],
 			[3,0,3,1,3,1,3,1,3,1,3,0,3],
@@ -314,23 +435,23 @@ var GameScene = new Phaser.Class({
 			for(var j = 0 ; j<13; j++)
 			{
 				
-				this.temp = this.physics.add.image(i*50+25, j*45+23, 'sprite', 'tile_env2_floor').setOffset(0,0);
-				this.temp.setSize(50,45);
+				this.temp = this.physics.add.image(i*TILE_SIZE_X+TILE_SIZE_X/2, j*TILE_SIZE_Y+TILE_SIZE_Y/2, 'sprite', 'tile_env2_floor').setOffset(0,0);
+				this.temp.setSize(TILE_SIZE_X,TILE_SIZE_Y);
 				this.fTiles.add(this.temp);
-				if(level[i][j] == 0)
+				if(this.TILES[i][j] == 0)
 				{
 					
 				}
-				else if(level[i][j] ==1)
+				else if(this.TILES[i][j] ==1)
 				{
-					this.temp = this.physics.add.image(i*50+25, j*45+23, 'sprite', 'tile_env2_block').setOffset(0,0);
-					this.temp.setSize(50,45,true);
+					this.temp = this.physics.add.image(i*TILE_SIZE_X+TILE_SIZE_X/2, j*TILE_SIZE_Y+TILE_SIZE_Y/2, 'sprite', 'tile_env2_block').setOffset(0,0);
+					this.temp.setSize(TILE_SIZE_X,TILE_SIZE_Y,true);
 					this.bTiles.add(this.temp);
 				}
-				else if(level[i][j] ==3)
+				else if(this.TILES[i][j] ==3)
 				{
-					this.temp = this.physics.add.image(i*50+25, j*45+23, 'sprite', 'tile_env2_wall').setOffset(0,0);
-					this.temp.setSize(50,45,true);
+					this.temp = this.physics.add.image(i*TILE_SIZE_X+TILE_SIZE_X/2, j*TILE_SIZE_Y+TILE_SIZE_Y/2, 'sprite', 'tile_env2_wall').setOffset(0,0);
+					this.temp.setSize(TILE_SIZE_X,TILE_SIZE_Y,true);
 					this.cTiles.add(this.temp);
 				}
 			}

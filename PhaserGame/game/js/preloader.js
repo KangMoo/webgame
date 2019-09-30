@@ -119,10 +119,10 @@ var Preloader = new Phaser.Class({
 				{ key:'sprite',frame:'bomb2'},
 				{ key:'sprite',frame:'bomb3'}
 			],
-			frameRate:5,
+			frameRate:7,
 			yoyo:true,
 			hideOnComplete: true,
-			repeat:4
+			repeat:3
 		});
 
 		this.anims.create({
@@ -147,7 +147,7 @@ var Preloader = new Phaser.Class({
 				{key:'sprite',frame:'flame1'},
 				{key:'sprite',frame:'flame2'}
 			],
-			frameRate: 10,
+			frameRate: 30,
 			yoyo:true,
 			//hideOnComplete: true,
 			repeat: 2
@@ -158,7 +158,7 @@ var Preloader = new Phaser.Class({
 				{key:'sprite',frame:'flame1_horizontal'},
 				{key:'sprite',frame:'flame2_horizontal'}
 			],
-			frameRate: 10,
+			frameRate: 30,
 			yoyo:true,
 			//hideOnComplete: true,
 			repeat: 2
@@ -169,7 +169,7 @@ var Preloader = new Phaser.Class({
 				{key:'sprite',frame:'flame1_vertical'},
 				{key:'sprite',frame:'flame2_vertical'}
 			],
-			frameRate: 10,
+			frameRate: 30,
 			yoyo:true,
 			//hideOnComplete: true,
 			repeat: 2
@@ -180,7 +180,7 @@ var Preloader = new Phaser.Class({
 				{key:'sprite',frame:'flame1_left'},
 				{key:'sprite',frame:'flame2_left'}
 			],
-			frameRate: 10,
+			frameRate: 30,
 			yoyo:true,
 			//hideOnComplete: true,
 			repeat: 2
@@ -191,7 +191,7 @@ var Preloader = new Phaser.Class({
 				{key:'sprite',frame:'flame1_right'},
 				{key:'sprite',frame:'flame2_right'}
 			],
-			frameRate: 10,
+			frameRate: 30,
 			yoyo:true,
 			//hideOnComplete: true,
 			repeat: 2
@@ -202,7 +202,7 @@ var Preloader = new Phaser.Class({
 				{key:'sprite',frame:'flame1_up'},
 				{key:'sprite',frame:'flame2_up'}
 			],
-			frameRate: 10,
+			frameRate: 30,
 			yoyo:true,
 			//hideOnComplete: true,
 			repeat: 2
@@ -213,7 +213,7 @@ var Preloader = new Phaser.Class({
 				{key:'sprite',frame:'flame1_down'},
 				{key:'sprite',frame:'flame2_down'}
 			],
-			frameRate: 10,
+			frameRate: 30,
 			yoyo:true,
 			//hideOnComplete: true,
 			repeat: 2
