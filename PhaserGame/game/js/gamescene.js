@@ -26,7 +26,9 @@ var GameScene = new Phaser.Class({
 			Phaser.Scene.call(this, { key: 'gamescene' });
 		},
 
-
+	init: function (settings) {
+		console.log('settings:', settings)
+	},
 	preload: function () {
 	},
 
@@ -34,61 +36,45 @@ var GameScene = new Phaser.Class({
 
 		//map setting
 		this.fTiles = this.add.group();
-		this.cTiles = this.physics.add.group({immovable:true});
-		this.bTiles = this.physics.add.group({immovable:true});
+		this.cTiles = this.physics.add.group({ immovable: true });
+		this.bTiles = this.physics.add.group({ immovable: true });
 		this.setTileMap();
 
-		
+
 
 		// add player sprite
-		this.player = this.physics.add.sprite(TILE_SIZE_X+TILE_SIZE_X/2, TILE_SIZE_Y, 'sprite');
+		this.player = this.physics.add.sprite(TILE_SIZE_X + TILE_SIZE_X / 2, TILE_SIZE_Y, 'sprite');
 		this.player.anims.load();
-		this.player.setSize(30,25).setOffset(15,64);
-		this.player.Info = {dir:DIR_DOWN,
-			state:STATE_IDLE,
-			bombcount:1,
-			bombpow:1,
-			speed:3,
-			ability:0,
-			x:0,y:0};
+		this.player.setSize(30, 25).setOffset(15, 64);
+		this.player.Info = {
+			dir: DIR_DOWN,
+			state: STATE_IDLE,
+			bombcount: 1,
+			bombpow: 1,
+			speed: 3,
+			ability: 0,
+			x: 0, y: 0
+		};
 		//this.player.setSize(50,45).setOffset(5,49);
 		this.player.setCollideWorldBounds(true);
-		console.log(this);
 
 		// add player sprite
-		this.dude = this.physics.add.image(400, 200, 'sprites', 'dude');
-		//this.dude = this.add.sprite(400, 200, 'sprites', 'dude');
-		
 
-		//this.dude.setCollideWorldBounds(true);
 
 		// add random coins and bombs
 		this.gameitems = this.physics.add.group();
+		this.flames = this.physics.add.group({ immovable: true });
 
-		for (var i = 0; i < 20; i++) {
-			// parameters
-			var x = Phaser.Math.RND.between(0, 800);
-			var y = Phaser.Math.RND.between(0, 600);
-			var objtype = (i < 5 ? TYPE_BOMB : TYPE_COIN);
+		this.bombs = this.physics.add.group({ immovable: true });
+		this.bombs_e = this.physics.add.group({ immovable: true });
 
-			// create custom sprite object
-			var newobj = new CollectObj(this, x, y, 'sprites', objtype);
-
-			this.gameitems.add(newobj);
-		}
-
-		this.flames = this.physics.add.group({immovable:true});
-
-		this.bombs = this.physics.add.group({immovable:true});
-		this.bombs_e = this.physics.add.group({immovable:true});
-		
 		//this.physics.add.collider(this.player,this.bombs);
 		//this.physics.add.collider(this.player,this.bombs_e);
-		this.physics.add.collider(this.player,[this.cTiles,this.bTiles,this.bombs,this.bombs_e]);
-		
-		this.setBomb(300,300,1);
-		this.setBomb(350,345,1);
-		this.setBomb(400,300,1);
+		this.physics.add.collider(this.player, [this.cTiles, this.bTiles, this.bombs, this.bombs_e]);
+
+		//this.setBomb(300,300,1);
+		//this.setBomb(350,345,1);
+		//this.setBomb(400,300,1);
 		// coin particles
 		var sparks = this.add.particles('sprites');
 		this.coinspark = sparks.createEmitter({
@@ -129,10 +115,15 @@ var GameScene = new Phaser.Class({
 		this.sfxbomb = this.sound.add('bomb');
 
 		// set up arcade physics, using `physics` requires "physics:{default: 'arcade'" when starting "new Phaser.Game(.."
-		this.physics.add.overlap(this.dude, this.gameitems, this.doOverlapItem, null, this);
+		this.physics.add.overlap(this.player, this.gameitems, this.playerGetItem, null, this);
 
-		this.physics.add.overlap(this.bombs, this.bombs, this.overlapBombs, null, this);
+		this.physics.add.overlap(this.bombs, this.bombs, this.ovlBombs, null, this);
+		//
+		this.physics.add.overlap(this.flames, this.player, this.ovlFlamePlayer, null, this);
+		this.physics.add.overlap(this.flames, this.bTiles, this.ovlFlameBTile, null, this);
+		this.physics.add.overlap(this.flames, this.gameitems, this.ovlFlameItem, null, this);
 
+		this.physics.add.overlap(this.flames, this.bombs, this.ovlFlameBomb, null, this);
 		// player input
 		this.cursors = this.input.keyboard.createCursorKeys();
 		this.spacebar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
@@ -141,323 +132,369 @@ var GameScene = new Phaser.Class({
 	},
 
 	update: function (time, delta) {
-		//this.bombs.setVelocity(0);
-		this.player.setVelocity(0);
-		if (this.cursors.up.isDown)    this.movePlayer(DIR_UP);
-		else if (this.cursors.down.isDown)  this.movePlayer(DIR_DOWN);
-		else if (this.cursors.left.isDown)  this.movePlayer(DIR_LEFT);
-		else if (this.cursors.right.isDown) this.movePlayer(DIR_RIGHT);
-		else this.playerStop(this.player.Info.dir);
 
-		if(Phaser.Input.Keyboard.JustDown(this.spacebar)&& this.player.Info.bombcount > this.bombs.children.size)
-		{
-			//this.chkCanBeBomb();
-			this.setBomb(this.player.Info.x,this.player.Info.y,this.player.Info.pow);
+		this.player.setVelocity(0);
+		if (this.player.Info.state != STATE_DIE) {
+			if (this.cursors.up.isDown) this.movePlayer(DIR_UP);
+			else if (this.cursors.down.isDown) this.movePlayer(DIR_DOWN);
+			else if (this.cursors.left.isDown) this.movePlayer(DIR_LEFT);
+			else if (this.cursors.right.isDown) this.movePlayer(DIR_RIGHT);
+			else this.playerStop(this.player.Info.dir);
+			if (Phaser.Input.Keyboard.JustDown(this.spacebar) && this.player.Info.bombcount > this.bombs.children.size) {
+				//this.chkCanBeBomb();
+				this.setBomb(this.player.Info.x, this.player.Info.y, this.player.Info.pow);
+			}
 		}
-		
+
+		this.gameitems.setDepth(1);
+		this.bombs.setDepth(2);
+		this.flames.setDepth(3);
+		this.player.setDepth(4);
 		this.playerInfoUpdate();
 	},
 
 	movePlayer: function (dir) {
 
-		if (dir == DIR_UP)    
-		{
-			this.player.setVelocityY(-100);
-			this.player.Info.dir=DIR_UP;
-			this.player.anims.play('player_up_walk_w',true);
+		if (dir == DIR_UP) {
+			this.player.setVelocityY(-this.player.Info.speed * 50);
+			this.player.Info.dir = DIR_UP;
+			this.player.anims.play('player_up_walk_w', true);
 		}
-		else if (dir == DIR_DOWN)  
-		{
-			this.player.setVelocityY(100);
-			this.player.Info.dir=DIR_DOWN;
-			this.player.anims.play('player_down_walk_w',true);
+		else if (dir == DIR_DOWN) {
+			this.player.setVelocityY(this.player.Info.speed * 50);
+			this.player.Info.dir = DIR_DOWN;
+			this.player.anims.play('player_down_walk_w', true);
 		}
-		if (dir == DIR_LEFT)  
-		{
-			this.player.setVelocityX(-100);
-			this.player.Info.dir=DIR_LEFT;
-			this.player.anims.play('player_left_walk_w',true);
+		if (dir == DIR_LEFT) {
+			this.player.setVelocityX(-this.player.Info.speed * 50);
+			this.player.Info.dir = DIR_LEFT;
+			this.player.anims.play('player_left_walk_w', true);
 		}
-		else if (dir == DIR_RIGHT) 
-		{
-			this.player.setVelocityX(100);
-			this.player.Info.dir=DIR_RIGHT;
-			this.player.anims.play('player_right_walk_w',true);
+		else if (dir == DIR_RIGHT) {
+			this.player.setVelocityX(this.player.Info.speed * 50);
+			this.player.Info.dir = DIR_RIGHT;
+			this.player.anims.play('player_right_walk_w', true);
 		}
 
-		this.player.Info.state=STATE_WALK;
+		this.player.Info.state = STATE_WALK;
 		//var test = this.scene.getBounds();
 		// check limits
-		if (this.player.y < 0)   this.player.y = 0;
+		if (this.player.y < 0) this.player.y = 0;
 		if (this.player.y > 600) this.player.y = 600;
-		if (this.player.x < 0)   this.player.x = 0;
+		if (this.player.x < 0) this.player.x = 0;
 		if (this.player.x > 800) this.player.x = 800;
 	},
-	playerStop: function(dir){
-		if (dir == DIR_UP)    
-		{
-			this.player.anims.play('player_up_w',true);
+	playerStop: function (dir) {
+		if (this.player.Info.state == STATE_DIE) {
+
+			return;
 		}
-		else if (dir == DIR_DOWN)  
-		{
-			this.player.anims.play('player_down_w',true);
+
+		if (dir == DIR_UP) {
+			this.player.anims.play('player_up_w', true);
 		}
-		if (dir == DIR_LEFT)  
-		{
-			this.player.anims.play('player_left_w',true);
+		else if (dir == DIR_DOWN) {
+			this.player.anims.play('player_down_w', true);
 		}
-		else if (dir == DIR_RIGHT) 
-		{
-			this.player.anims.play('player_right_w',true);
+		if (dir == DIR_LEFT) {
+			this.player.anims.play('player_left_w', true);
 		}
-		this.player.Info.state=STATE_IDLE;
+		else if (dir == DIR_RIGHT) {
+			this.player.anims.play('player_right_w', true);
+		}
+		this.player.Info.state = STATE_IDLE;
 	},
 
-	explode: function (x,y,power) {
+	explode: function (x, y, power) {
 		//flamesize calculate
-		
-		x = parseInt(x/TILE_SIZE_X)*TILE_SIZE_X;
-		y = parseInt(y/TILE_SIZE_Y)*TILE_SIZE_Y;
-		
-		console.log('explode',x,y);
-		this.makeFlame(x+TILE_SIZE_X/2,y+TILE_SIZE_X/2,'flame_center');
-		//makeArm
-		this.makeArm(x,y,power,DIR_UP);
-		this.makeArm(x,y,power,DIR_LEFT);
-		this.makeArm(x,y,power,DIR_RIGHT);
-		this.makeArm(x,y,power,DIR_DOWN);
 
-		/*
-		for(var i=-power;i<=power;i++)
-		{
-			if(i==0) continue;
-			var posx = x + TILE_SIZE_X*i;
-			var posy = y;
-			if(this.flametileChk(posx,posy) == 3) continue;
-			if(i==-power)
-				this.makeFlame(posx,posy,'flame_left');
-			else if(i==power)
-				this.makeFlame(posx,posy,'flame_right');
-			else
-			{
-				if(this.flametileChk(posx,posy) == 1)
-				{
-					if(i<0) {
-						this.makeFlame(posx,posy,'flame_left');
-						i =1;
-						continue;
-					}
-					if(i>0) {
-						break;
-					}
-				}
-				this.makeFlame(posx,posy,'flame_h');
-			}
-				
-		}
-		for(var i=-power;i<=power;i++)
-		{
-			if(i==0) continue;
-			var posx = x;
-			var posy = y +TILE_SIZE_Y*i;
-			if(i==-power)
-			this.makeFlame(posx,posy,'flame_up');
-			else if(i==power)
-			this.makeFlame(posx,posy,'flame_down');
-			else
-			this.makeFlame(posx,posy,'flame_v');
-		}
-		*/
+		x = parseInt(x / TILE_SIZE_X) * TILE_SIZE_X;
+		y = parseInt(y / TILE_SIZE_Y) * TILE_SIZE_Y;
 
-		this.player.setDepth(1);
-		//var temp = this.add.sprite(x, y, 'sprite').setScale(1).anims.load('die');
-		//temp.play('die');
-		//var temp = this.add.sprite(x, y, 'sprite').setScale(1).anims.load('explosion');
-		//temp.play('explosion');
+
 		
+		this.makeArm(x, y, power, DIR_UP);
+		this.makeArm(x, y, power, DIR_LEFT);
+		this.makeArm(x, y, power, DIR_RIGHT);
+		this.makeArm(x, y, power, DIR_DOWN);
+		this.makeFlame(x + TILE_SIZE_X / 2, y + TILE_SIZE_X / 2, 'flame_center');
 	},
-	makeArm:function(x,y,pow,dir){
-		
-		for(var i = 1; i<=pow;i++)
-		{
+	makeArm: function (x, y, pow, dir) {
+
+		for (var i = 1; i <= pow; i++) {
 			var px = x;
 			var py = y;
-			if(dir == DIR_UP){
-				py -= i*TILE_SIZE_Y;
-				var chk = this.flametileChk(px,py);
-				if(chk == 3) break;
-				if(chk==1)
-				{
-					this.makeFlame(px+TILE_SIZE_X/2,py+TILE_SIZE_Y/2,'flame_up');
+			if (dir == DIR_UP) {
+				py -= i * TILE_SIZE_Y;
+				var chk = this.flametileChk(px, py);
+				if (chk == 3) break;
+				if (chk == 1) {
+					this.makeFlame(px + TILE_SIZE_X / 2, py + TILE_SIZE_Y / 2, 'flame_up');
 					break;
 				}
-				if(i ==pow)
-				{
-					this.makeFlame(px+TILE_SIZE_X/2,py+TILE_SIZE_Y/2,'flame_up');
-					break;
+				else {
+					if (i == pow) {
+						this.makeFlame(px + TILE_SIZE_X / 2, py + TILE_SIZE_Y / 2, 'flame_up');
+					}
+					else {
+						this.makeFlame(px + TILE_SIZE_X / 2, py + TILE_SIZE_Y / 2, 'flame_v');
+					}
 				}
-				this.makeFlame(px+TILE_SIZE_X/2,py+TILE_SIZE_Y/2,'flame_h');
 			}
-			else if(dir=== DIR_LEFT){
-				px -= i*TILE_SIZE_X;
-				var chk = this.flametileChk(px,py);
-				if(chk == 3) break;
-				if(chk==1)
-				{
-					this.makeFlame(px+TILE_SIZE_X/2,py+TILE_SIZE_Y/2,'flame_left');
+			else if (dir === DIR_LEFT) {
+				px -= i * TILE_SIZE_X;
+				var chk = this.flametileChk(px, py);
+				if (chk == 3) break;
+				if (chk == 1) {
+					this.makeFlame(px + TILE_SIZE_X / 2, py + TILE_SIZE_Y / 2, 'flame_left');
 					break;
 				}
-				if(i ==pow)
-				{
-					this.makeFlame(px+TILE_SIZE_X/2,py+TILE_SIZE_Y/2,'flame_left');
-					break;
+				else {
+					if (i == pow) {
+						this.makeFlame(px + TILE_SIZE_X / 2, py + TILE_SIZE_Y / 2, 'flame_left');
+					}
+					else {
+						this.makeFlame(px + TILE_SIZE_X / 2, py + TILE_SIZE_Y / 2, 'flame_h');
+					}
 				}
-				this.makeFlame(px+TILE_SIZE_X/2,py+TILE_SIZE_Y/2,'flame_v');
+
 			}
-			else if(dir== DIR_RIGHT){
-				px +=i*TILE_SIZE_X;
-				var chk = this.flametileChk(px,py);
-				if(chk == 3) break;
-				if(chk==1)
-				{
-					this.makeFlame(px+TILE_SIZE_X/2,py+TILE_SIZE_Y/2,'flame_right');
+			else if (dir == DIR_RIGHT) {
+				px += i * TILE_SIZE_X;
+				var chk = this.flametileChk(px, py);
+				if (chk == 3) break;
+				if (chk == 1) {
+					this.makeFlame(px + TILE_SIZE_X / 2, py + TILE_SIZE_Y / 2, 'flame_right');
 					break;
 				}
-				if(i ==pow)
-				{
-					this.makeFlame(px+TILE_SIZE_X/2,py+TILE_SIZE_Y/2,'flame_right');
-					break;
+				else {
+
+					if (i == pow) {
+						this.makeFlame(px + TILE_SIZE_X / 2, py + TILE_SIZE_Y / 2, 'flame_right');
+					}
+					else {
+						this.makeFlame(px + TILE_SIZE_X / 2, py + TILE_SIZE_Y / 2, 'flame_h');
+					}
 				}
-				this.makeFlame(px+TILE_SIZE_X/2,py+TILE_SIZE_Y/2,'flame_v');
 			}
-			else if(dir == DIR_DOWN){
-				py += i*TILE_SIZE_Y;
-				var chk = this.flametileChk(px,py);
-				if(chk == 3) break;
-				if(chk==1)
-				{
-					this.makeFlame(px+TILE_SIZE_X/2,py+TILE_SIZE_Y/2,'flame_down');
+			else if (dir == DIR_DOWN) {
+				py += i * TILE_SIZE_Y;
+				var chk = this.flametileChk(px, py);
+				if (chk == 3) break;
+				if (chk == 1) {
+					this.makeFlame(px + TILE_SIZE_X / 2, py + TILE_SIZE_Y / 2, 'flame_down');
 					break;
 				}
-				if(i ==pow)
-				{
-					this.makeFlame(px+TILE_SIZE_X/2,py+TILE_SIZE_Y/2,'flame_down');
-					break;
-				}	
-				this.makeFlame(px+TILE_SIZE_X/2,py+TILE_SIZE_Y/2,'flame_h');
+				else {
+					if (i == pow) {
+						this.makeFlame(px + TILE_SIZE_X / 2, py + TILE_SIZE_Y / 2, 'flame_down');
+					}
+					else {
+						this.makeFlame(px + TILE_SIZE_X / 2, py + TILE_SIZE_Y / 2, 'flame_v');
+					}
+				}
 			}
 		}
 	},
 
-	makeFlame:function(x,y,flamedir){
+	makeFlame: function (x, y, flamedir) {
 
-		var flame = this.physics.add.sprite(x, y, 'sprite').setScale(1);	
-		flame.setSize(TILE_SIZE_X-2,TILE_SIZE_Y-2).setOffset(1,1);
-		flame.createdTime = this.time.now;
-		flame.on('animationcomplete',(cuuurentAnim, currentFrmae, sprite)=>{
+
+		var flame = this.physics.add.sprite(x, y, 'sprite').setScale(1);
+		flame.setSize(TILE_SIZE_X - 2, TILE_SIZE_Y - 2).setOffset(1, 1);
+		//flame.bornTime = this.time.now;
+		flame.on('animationcomplete', (cuuurentAnim, currentFrmae, sprite) => {
 			this.tweens.add({
 				targets: flame,
 				duration: 100,
 				alpha: 0,
-				onComplete:()=>{flame.destroy();}
+				onComplete: () => { flame.destroy(); }
 			});
 		});
 		flame.anims.load(flamedir);
 		flame.anims.play(flamedir);
-		
+
 		this.flames.add(flame);
 	},
-	flametileChk:function(x,y){
-		console.log('flametileChk:');
-		console.log(x,y);
-		console.log(parseInt(x/TILE_SIZE_X),parseInt(y/TILE_SIZE_Y));
-		return this.TILES[parseInt(x/TILE_SIZE_X)][parseInt(y/TILE_SIZE_Y)]
+	flametileChk: function (x, y) {
+		return this.TILES[parseInt(x / TILE_SIZE_X)][parseInt(y / TILE_SIZE_Y)]
 	},
 	doBack: function () {
-		
-		this.explode(Phaser.Math.RND.between(0, 800), Phaser.Math.RND.between(0, 800), 1);//Phaser.Math.RND.between(1, 5));
+
+		//this.explode(Phaser.Math.RND.between(0, 800), Phaser.Math.RND.between(0, 800), 1);//Phaser.Math.RND.between(1, 5));
+		this.playerDie();
 		console.log('gamescene doBack was called!');
 		//this.scene.start('mainmenu');
 	},
-	setBomb:function(x,y,pow){
-		x = parseInt(x/TILE_SIZE_X)*TILE_SIZE_X + TILE_SIZE_X/2;
-		y = parseInt(y/TILE_SIZE_Y)*TILE_SIZE_Y + TILE_SIZE_Y/2;
+	setBomb: function (x, y, pow) {
+		x = parseInt(x / TILE_SIZE_X) * TILE_SIZE_X + TILE_SIZE_X / 2;
+		y = parseInt(y / TILE_SIZE_Y) * TILE_SIZE_Y + TILE_SIZE_Y / 2;
 
-		var temp = this.physics.add.sprite(x, y, 'sprite').setScale(1);
-		temp.power=this.player.Info.bombpow;
-		temp.name=this.time.now;
-		temp.on('animationcomplete',(cuuurentAnim, currentFrmae, sprite)=>{
-			
-			this.explode(sprite.x,sprite.y,temp.power);
-			temp.destroy();
+		var bomb = this.physics.add.sprite(x, y, 'sprite').setScale(1);
+		bomb.power = this.player.Info.bombpow;
+		bomb.name = this.time.now;
+		bomb.on('animationcomplete', (cuuurentAnim, currentFrmae, sprite) => {
+			this.explode(sprite.x, sprite.y, bomb.power);
+			bomb.destroy();
 		});
-		temp.setSize(TILE_SIZE_X,TILE_SIZE_Y).setOffset(0,0);
-		temp.anims.load('bomb');
-		temp.anims.play('bomb');
-		
+		bomb.setSize(TILE_SIZE_X, TILE_SIZE_Y).setOffset(0, 0);
+		bomb.anims.load('bomb');
+		bomb.anims.play('bomb');
 
-		this.bombs.add(temp);
+
+		this.bombs.add(bomb);
 		this.player.setDepth(1);
 	},
-	
-	overlapBombs:function(b1,b2)
-	{
+
+	ovlBombs: function (b1, b2) {
 		b2.destroy();
 	},
 
-	playerInfoUpdate:function(){
+	playerInfoUpdate: function () {
 		this.player.Info.x = this.player.x;
-		this.player.Info.y = this.player.y+28;
+		this.player.Info.y = this.player.y + 28;
 	},
-
-	setTileMap:function()
+	ovlFlamePlayer(flame,player)
 	{
+		this.playerDie();
+	},
+	playerDie: function () {
+		if (this.player.Info.state == STATE_DIE) return;
+		this.player.Info.state = STATE_DIE;
+		//this.player.load('die');
+		this.player.anims.play('die');
+		this.player.on('animationcomplete', (cuuurentAnim, currentFrmae, sprite) => {
+			this.gameOver();
+		});
+	},
+	ovlFlameBTile: function (flame, tile) {
+		this.TILES[parseInt(tile.x / TILE_SIZE_X)][parseInt(tile.y / TILE_SIZE_Y)] = 0;
+		this.itemRndAdd(tile.x, tile.y);
+		tile.destroy();
+	},
+	itemRndAdd: function (x, y) {
+
+		x = parseInt(x / TILE_SIZE_X) * TILE_SIZE_X + TILE_SIZE_X / 2;
+		y = parseInt(y / TILE_SIZE_Y) * TILE_SIZE_Y + TILE_SIZE_Y / 2;
+
+		var item = Phaser.Math.RND.between(0, 8);
+		var newobj;
+		if (item == 0) {
+			newobj = new CollectObj(this, x, y, 'sprite', TYPE_BOMBUP);
+		}
+		else if (item == 1) {
+			newobj = new CollectObj(this, x, y, 'sprite', TYPE_SPEEDUP);
+		}
+		else if (item == 2) {
+			newobj = new CollectObj(this, x, y, 'sprite', TYPE_POWERUP);
+		}
+		else {
+			return;
+		}
+		newobj.setSize(TILE_SIZE_X - 2, TILE_SIZE_Y - 2).setOffset(1, 1);
+		this.gameitems.add(newobj);
+
+	},
+	playerGetItem: function (player, item) {
+		if (item.data.values.type == TYPE_BOMBUP) {
+			if (this.player.Info.bombcount < 8);
+			this.player.Info.bombcount++;
+		}
+		else if (item.data.values.type == TYPE_SPEEDUP) {
+			if (this.player.Info.speed < 8)
+				this.player.Info.speed++;
+		}
+		else if (item.data.values.type == TYPE_POWERUP) {
+			if (this.player.Info.bombpow < 5)
+				this.player.Info.bombpow++;
+		}
+		item.destroy();
+	},
+	ovlFlameItem: function (flame, item) {
+		if (item.data.values.bornTime + 450 > this.time.now) {
+
+		}
+		else {
+			//console.log(item.data.values.bornTime + 100, this.time.now);
+			item.destroy();
+		}
+	},
+	ovlFlameBomb:function(flame,bomb)
+	{
+		
+		var x = bomb.x;
+		var y = bomb.y;
+		var pow = bomb.power;
+		bomb.destroy();
+		this.explode(x,y,pow);
+		
+	},
+	gameOver: function () {
+		// add game over text
+		var txt = this.add.bitmapText(400, 300, 'fontwhite', 'Game over!');
+		txt.setOrigin(0.5).setCenterAlign();
+
+		// set gameover text as transparant, upside down and larger
+		txt.setAlpha(0.0);
+		txt.setAngle(180);
+		txt.setScale(4.0, 4.0);
+
+		// add twirl/zoom animation to gameover text
+		var tw = this.tweens.add(
+			{
+				targets: txt,
+				scaleX: 1.0,
+				scaleY: 1.0,
+				alpha: 1.0,
+				angle: 0,
+				ease: 'Power3',
+				duration: 1000, // duration of animation; higher=slower
+				delay: 500      // wait 500 ms before starting
+			}
+		);
+	},
+	setTileMap: function () {
 		this.TILES = [
-			[3,3,3,3,3,3,3,3,3,3,3,3,3],
-			[3,0,0,0,1,0,1,1,1,0,0,0,3],
-			[3,0,3,1,3,1,3,1,3,1,3,0,3],
-			[3,0,1,1,1,1,1,1,0,1,1,0,3],
-			[3,1,3,1,3,1,3,1,3,1,3,1,3],
-			[3,1,1,0,1,1,1,1,0,1,1,1,3],
-			[3,1,3,1,3,1,3,1,3,1,3,0,3],
-			[3,1,1,1,0,1,0,1,1,0,1,1,3],
-			[3,1,3,1,3,1,3,1,3,1,3,1,3],
-			[3,0,1,1,0,1,1,1,0,1,1,1,3],
-			[3,1,3,1,3,1,3,1,3,1,3,1,3],
-			[3,0,1,0,1,1,1,0,1,1,1,0,3],
-			[3,0,3,1,3,1,3,1,3,1,3,0,3],
-			[3,0,0,0,1,1,0,1,1,0,0,0,3],
-			[3,3,3,3,3,3,3,3,3,3,3,3,3]
+			[3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+			[3, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 3],
+			[3, 0, 3, 1, 3, 1, 3, 1, 3, 1, 3, 0, 3],
+			[3, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 3],
+			[3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3],
+			[3, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 3],
+			[3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 0, 3],
+			[3, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 3],
+			[3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3],
+			[3, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 3],
+			[3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3],
+			[3, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 3],
+			[3, 0, 3, 1, 3, 1, 3, 1, 3, 1, 3, 0, 3],
+			[3, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 3],
+			[3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
 		];
 
-		for(var i =0 ; i<15;i++)
-		{
-			for(var j = 0 ; j<13; j++)
-			{
-				
-				this.temp = this.physics.add.image(i*TILE_SIZE_X+TILE_SIZE_X/2, j*TILE_SIZE_Y+TILE_SIZE_Y/2, 'sprite', 'tile_env2_floor').setOffset(0,0);
-				this.temp.setSize(TILE_SIZE_X,TILE_SIZE_Y);
+		for (var i = 0; i < 15; i++) {
+			for (var j = 0; j < 13; j++) {
+
+				this.temp = this.physics.add.image(i * TILE_SIZE_X + TILE_SIZE_X / 2, j * TILE_SIZE_Y + TILE_SIZE_Y / 2, 'sprite', 'tile_env2_floor').setOffset(0, 0);
+				this.temp.setSize(TILE_SIZE_X, TILE_SIZE_Y);
 				this.fTiles.add(this.temp);
-				if(this.TILES[i][j] == 0)
-				{
-					
+				if (this.TILES[i][j] == 0) {
+
 				}
-				else if(this.TILES[i][j] ==1)
-				{
-					this.temp = this.physics.add.image(i*TILE_SIZE_X+TILE_SIZE_X/2, j*TILE_SIZE_Y+TILE_SIZE_Y/2, 'sprite', 'tile_env2_block').setOffset(0,0);
-					this.temp.setSize(TILE_SIZE_X,TILE_SIZE_Y,true);
+				else if (this.TILES[i][j] == 1) {
+					this.temp = this.physics.add.image(i * TILE_SIZE_X + TILE_SIZE_X / 2, j * TILE_SIZE_Y + TILE_SIZE_Y / 2, 'sprite', 'tile_env2_block').setOffset(0, 0);
+					this.temp.setSize(TILE_SIZE_X, TILE_SIZE_Y, true);
 					this.bTiles.add(this.temp);
 				}
-				else if(this.TILES[i][j] ==3)
-				{
-					this.temp = this.physics.add.image(i*TILE_SIZE_X+TILE_SIZE_X/2, j*TILE_SIZE_Y+TILE_SIZE_Y/2, 'sprite', 'tile_env2_wall').setOffset(0,0);
-					this.temp.setSize(TILE_SIZE_X,TILE_SIZE_Y,true);
+				else if (this.TILES[i][j] == 3) {
+					this.temp = this.physics.add.image(i * TILE_SIZE_X + TILE_SIZE_X / 2, j * TILE_SIZE_Y + TILE_SIZE_Y / 2, 'sprite', 'tile_env2_wall').setOffset(0, 0);
+					this.temp.setSize(TILE_SIZE_X, TILE_SIZE_Y, true);
 					this.cTiles.add(this.temp);
 				}
 			}
 		}
 	},
-	enemyPlayerRender:function(enemyPlayerInfo){
+	enemyPlayerRender: function (enemyPlayerInfo) {
 
 	}
 

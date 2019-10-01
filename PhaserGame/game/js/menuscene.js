@@ -77,8 +77,9 @@ var MainMenu = new Phaser.Class({
 	
 	doStart: function ()
     {
+        
         console.log('menuscene doStart was called!');
-		this.scene.start('gamescene');
+        this.scene.start('gamescene','test');
     }
 
 });
