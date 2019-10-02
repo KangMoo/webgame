@@ -15,7 +15,6 @@ const STATE_DIE = 4;
 const TILE_SIZE_X = 50;
 const TILE_SIZE_Y = 45;
 
-
 var GameScene = new Phaser.Class({
 
 	Extends: Phaser.Scene,
@@ -39,8 +38,7 @@ var GameScene = new Phaser.Class({
 		this.cTiles = this.physics.add.group({ immovable: true });
 		this.bTiles = this.physics.add.group({ immovable: true });
 		this.setTileMap();
-
-
+		console.log(this.IS_TOUCH);
 
 		// add player sprite
 		this.player = this.physics.add.sprite(TILE_SIZE_X + TILE_SIZE_X / 2, TILE_SIZE_Y, 'sprite');
@@ -109,6 +107,7 @@ var GameScene = new Phaser.Class({
 
 
 		// set up arcade physics, using `physics` requires "physics:{default: 'arcade'" when starting "new Phaser.Game(.."
+
 		this.physics.add.overlap(this.player, this.gameitems, this.playerGetItem, null, this);
 
 		this.physics.add.overlap(this.bombs, [this.bombs,this.bombs_e], this.ovlBombs, null, this);

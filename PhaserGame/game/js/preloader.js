@@ -60,6 +60,12 @@ var Preloader = new Phaser.Class({
 
 	preload: function ()
 	{
+		this.IS_TOUCH = false;
+		window.addEventListener('touchstart',function(){
+			IS_TOUCH = true;
+		});
+		console.log(this.IS_TOUCH);
+		this.io = io();
 		// setup the loading bar
 		// note: images are available during preload because of the pack-property in the constructor
 		this.loadingbar_bg   = this.add.sprite(400, 300, "loadingbar_bg");
