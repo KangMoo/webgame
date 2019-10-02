@@ -80,12 +80,16 @@ var Preloader = new Phaser.Class({
 		this.load.audio('bomb', ['snd/expl.mp3', 'snd/expl.ogg']);
 		this.load.audio('btn',  ['snd/btn.mp3', 'snd/btn.ogg']);
 		
-		// !! TESTING !! load the same image 500 times just to slow down the load and test the loading bar
-		//for (var i = 0; i < 500; i++) {
-		//	this.load.image('testloading'+i, 'img/spritearray.png');
-		//};
-		// !! TESTING !!
-
+		this.load.audio('getItem','src/sound/coin.mp3');
+		this.load.audio('go','src/sound/go.wav');
+		this.load.audio('explosion','src/sound/explosion.wav');
+		this.load.audio('setBomb','src/sound/bomb.wav');
+		this.load.audio('die','src/sound/die.wav');
+		this.load.audio('click','src/sound/click.wav');
+		
+		this.load.audio('bgm_menuscene','src/sound/music_broke_for_free_caught_in_the_beat_remix.wav');
+		this.load.audio('bgm_gamescene','src/sound/music_Jason_Shaw_Ecstasy_X.mp3');
+		
 
 		
 	},

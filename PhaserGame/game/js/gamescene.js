@@ -44,7 +44,7 @@ var GameScene = new Phaser.Class({
 
 		// add player sprite
 		this.player = this.physics.add.sprite(TILE_SIZE_X + TILE_SIZE_X / 2, TILE_SIZE_Y, 'sprite');
-		this.player.anims.load();
+		
 		this.player.setSize(30, 25).setOffset(15, 64);
 		this.player.Info = {
 			dir: DIR_DOWN,
@@ -55,26 +55,22 @@ var GameScene = new Phaser.Class({
 			ability: 0,
 			x: 0, y: 0
 		};
-		//this.player.setSize(50,45).setOffset(5,49);
 		this.player.setCollideWorldBounds(true);
 
 		// add player sprite
 
-
+		var bgm = this.sound.add('bgm_gamescene');
+		bgm.loop = true;
+		bgm.volume = 0.5;
+		bgm.play();
 		// add random coins and bombs
 		this.gameitems = this.physics.add.group();
 		this.flames = this.physics.add.group({ immovable: true });
 
 		this.bombs = this.physics.add.group({ immovable: true });
 		this.bombs_e = this.physics.add.group({ immovable: true });
-
-		//this.physics.add.collider(this.player,this.bombs);
-		//this.physics.add.collider(this.player,this.bombs_e);
-		this.physics.add.collider(this.player, [this.cTiles, this.bTiles, this.bombs, this.bombs_e]);
-
-		//this.setBomb(300,300,1);
-		//this.setBomb(350,345,1);
-		//this.setBomb(400,300,1);
+		
+		this.physics.add.collider(this.player, [this.cTiles, this.bTiles, this.bombs, this.bombs_e],this.ovlPlayerTile,null,this);
 		// coin particles
 		var sparks = this.add.particles('sprites');
 		this.coinspark = sparks.createEmitter({
@@ -110,9 +106,7 @@ var GameScene = new Phaser.Class({
 			lifespan: 1000
 		});
 
-		// sound effects
-		this.sfxcoin = this.sound.add('coin');
-		this.sfxbomb = this.sound.add('bomb');
+
 
 		// set up arcade physics, using `physics` requires "physics:{default: 'arcade'" when starting "new Phaser.Game(.."
 		this.physics.add.overlap(this.player, this.gameitems, this.playerGetItem, null, this);
@@ -135,10 +129,16 @@ var GameScene = new Phaser.Class({
 
 		this.player.setVelocity(0);
 		if (this.player.Info.state != STATE_DIE) {
-			if (this.cursors.up.isDown) this.movePlayer(DIR_UP);
-			else if (this.cursors.down.isDown) this.movePlayer(DIR_DOWN);
-			else if (this.cursors.left.isDown) this.movePlayer(DIR_LEFT);
-			else if (this.cursors.right.isDown) this.movePlayer(DIR_RIGHT);
+			if(this.cursors.up.isDown ||
+				this.cursors.down.isDown ||
+				this.cursors.left.isDown ||
+				this.cursors.right.isDown)
+				{
+					if (this.cursors.up.isDown) this.movePlayer(DIR_UP);
+					else if (this.cursors.down.isDown) this.movePlayer(DIR_DOWN);
+					if (this.cursors.left.isDown) this.movePlayer(DIR_LEFT);
+					else if (this.cursors.right.isDown) this.movePlayer(DIR_RIGHT);
+				}
 			else this.playerStop(this.player.Info.dir);
 			if (Phaser.Input.Keyboard.JustDown(this.spacebar) && this.player.Info.bombcount > this.bombs.children.size) {
 				//this.chkCanBeBomb();
@@ -165,7 +165,7 @@ var GameScene = new Phaser.Class({
 			this.player.Info.dir = DIR_DOWN;
 			this.player.anims.play('player_down_walk_w', true);
 		}
-		if (dir == DIR_LEFT) {
+		else if (dir == DIR_LEFT) {
 			this.player.setVelocityX(-this.player.Info.speed * 50);
 			this.player.Info.dir = DIR_LEFT;
 			this.player.anims.play('player_left_walk_w', true);
@@ -207,7 +207,8 @@ var GameScene = new Phaser.Class({
 
 	explode: function (x, y, power) {
 		//flamesize calculate
-
+		this.sound.play('explosion');
+		
 		x = parseInt(x / TILE_SIZE_X) * TILE_SIZE_X;
 		y = parseInt(y / TILE_SIZE_Y) * TILE_SIZE_Y;
 
@@ -308,7 +309,9 @@ var GameScene = new Phaser.Class({
 				targets: flame,
 				duration: 100,
 				alpha: 0,
-				onComplete: () => { flame.destroy(); }
+
+				onComplete: () => { 
+					flame.destroy(); }
 			});
 		});
 		flame.anims.load(flamedir);
@@ -327,6 +330,8 @@ var GameScene = new Phaser.Class({
 		//this.scene.start('mainmenu');
 	},
 	setBomb: function (x, y, pow) {
+		
+		this.sound.play('setBomb');
 		x = parseInt(x / TILE_SIZE_X) * TILE_SIZE_X + TILE_SIZE_X / 2;
 		y = parseInt(y / TILE_SIZE_Y) * TILE_SIZE_Y + TILE_SIZE_Y / 2;
 
@@ -358,26 +363,69 @@ var GameScene = new Phaser.Class({
 	{
 		this.playerDie();
 	},
+	ovlPlayerTile(player,tile)
+	{
+		/*
+		var dircount = 0;
+		if(this.cursors.up.isDown) dircount ++;
+		if(this.cursors.down.isDown) dircount ++;
+		if(this.cursors.left.isDown) dircount ++;
+		if(this.cursors.right.isDown) dircount ++;
+		
+		var pTilePos = {
+			x:parseInt(player.x/TILE_SIZE_X)*TILE_SIZE_X + TILE_SIZE_X/2,
+			y:parseInt(player.y/TILE_SIZE_Y)*TILE_SIZE_Y + TILE_SIZE_Y/2
+		}
+		var velocity = {};
+		velocity.x = pTilePos.x < player.x ? -1 : 1;
+		velocity.y = pTilePos.y < player.y ? -1 : 1;
+		
+		if(dircount != 1) return;
+		if(player.Info.dir == DIR_LEFT ||player.Info.dir == DIR_RIGHT)
+		{
+			player.setVelocityY(velocity.y*150);
+		}
+		else
+		{
+			player.setVelocityX(velocity.x*150);
+		}
+		*/
+	},
 	playerDie: function () {
+		
 		if (this.player.Info.state == STATE_DIE) return;
+		
 		this.player.Info.state = STATE_DIE;
-		//this.player.load('die');
+		this.sound.play('die');
 		this.player.anims.play('die');
 		this.player.on('animationcomplete', (cuuurentAnim, currentFrmae, sprite) => {
 			this.gameOver();
 		});
 	},
 	ovlFlameBTile: function (flame, tile) {
+		if(this.TILES[parseInt(tile.x / TILE_SIZE_X)][parseInt(tile.y / TILE_SIZE_Y)] == 0)
+			return;
 		this.TILES[parseInt(tile.x / TILE_SIZE_X)][parseInt(tile.y / TILE_SIZE_Y)] = 0;
-		this.itemRndAdd(tile.x, tile.y);
-		tile.destroy();
+		//this.itemRndAdd(tile.x, tile.y);
+		
+			this.tweens.add({
+				targets: tile,
+				duration: 450,
+				alpha: 0,
+
+				onComplete: () => { 
+					tile.destroy();
+					this.itemRndAdd(tile.x, tile.y);
+					}
+			});
+		
 	},
 	itemRndAdd: function (x, y) {
 
 		x = parseInt(x / TILE_SIZE_X) * TILE_SIZE_X + TILE_SIZE_X / 2;
 		y = parseInt(y / TILE_SIZE_Y) * TILE_SIZE_Y + TILE_SIZE_Y / 2;
 
-		var item = Phaser.Math.RND.between(0, 8);
+		var item = Phaser.Math.RND.between(0, 12);
 		var newobj;
 		if (item == 0) {
 			newobj = new CollectObj(this, x, y, 'sprite', TYPE_BOMBUP);
@@ -396,6 +444,9 @@ var GameScene = new Phaser.Class({
 
 	},
 	playerGetItem: function (player, item) {
+		this.sound.add('getItem').volume = 0.3;
+		this.sound.play('getItem');
+		
 		if (item.data.values.type == TYPE_BOMBUP) {
 			if (this.player.Info.bombcount < 8);
 			this.player.Info.bombcount++;
@@ -411,23 +462,16 @@ var GameScene = new Phaser.Class({
 		item.destroy();
 	},
 	ovlFlameItem: function (flame, item) {
-		if (item.data.values.bornTime + 450 > this.time.now) {
-
-		}
-		else {
-			//console.log(item.data.values.bornTime + 100, this.time.now);
-			item.destroy();
-		}
+		if(flame.endAnimation == false) return;
+		item.destroy();
 	},
 	ovlFlameBomb:function(flame,bomb)
 	{
-		
 		var x = bomb.x;
 		var y = bomb.y;
 		var pow = bomb.power;
 		bomb.destroy();
 		this.explode(x,y,pow);
-		
 	},
 	gameOver: function () {
 		// add game over text
