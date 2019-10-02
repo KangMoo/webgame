@@ -111,13 +111,15 @@ var GameScene = new Phaser.Class({
 		// set up arcade physics, using `physics` requires "physics:{default: 'arcade'" when starting "new Phaser.Game(.."
 		this.physics.add.overlap(this.player, this.gameitems, this.playerGetItem, null, this);
 
-		this.physics.add.overlap(this.bombs, this.bombs, this.ovlBombs, null, this);
+		this.physics.add.overlap(this.bombs, [this.bombs,this.bombs_e], this.ovlBombs, null, this);
+		this.physics.add.overlap(this.bombs_e, [this.bombs,this.bombs_e], this.ovlBombs, null, this);
+		
 		//
 		this.physics.add.overlap(this.flames, this.player, this.ovlFlamePlayer, null, this);
 		this.physics.add.overlap(this.flames, this.bTiles, this.ovlFlameBTile, null, this);
 		this.physics.add.overlap(this.flames, this.gameitems, this.ovlFlameItem, null, this);
 
-		this.physics.add.overlap(this.flames, this.bombs, this.ovlFlameBomb, null, this);
+		this.physics.add.overlap(this.flames, [this.bombs,this.bombs_e], this.ovlFlameBomb, null, this);
 		// player input
 		this.cursors = this.input.keyboard.createCursorKeys();
 		this.spacebar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
@@ -148,6 +150,7 @@ var GameScene = new Phaser.Class({
 
 		this.gameitems.setDepth(1);
 		this.bombs.setDepth(2);
+		this.bombs_e.setDepth(2);
 		this.flames.setDepth(3);
 		this.player.setDepth(4);
 		this.playerInfoUpdate();
