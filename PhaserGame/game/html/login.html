@@ -64,6 +64,7 @@ input[type="checkbox"]:checked {
 }
 input[type="checkbox"]:checked + .toggle { background-position: 0 -16px }
 .forgot {
+  margin-right: 10px;
   color: #7f7f7f;
   display: inline-block;
   float: right;
@@ -118,7 +119,9 @@ input[type="submit"]:active {
 <div class="login">
     <input type="text" placeholder="Username" id="username" name="username">
     <input type="password" placeholder="password" id="password" name="password">
-    <a href="#" class="forgot">forgot password?</a>
+    <a href="#" class="forgot" name="joinButton">회원가입</a>
+    <a href="#" class="forgot">비밀번호 찾기</a>
     <input type="submit" value="Sign In" name="loginButton">
 </div>
+
 <div class="shadow"></div>

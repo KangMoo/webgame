@@ -1,34 +1,34 @@
 
 var element;
 
-var MainMenu = new Phaser.Class({
+var JoinMenu = new Phaser.Class({
 
     Extends: Phaser.Scene,
 
     initialize:
 
-    function MainMenu ()
+    function JoinMenu ()
     {
-        Phaser.Scene.call(this, { key: 'mainmenu' });
+        Phaser.Scene.call(this, { key: 'joinmenu' });
     },
 
     preload: function ()
     {
-        this.load.html('nameform', 'html/login.html');
+        this.load.html('joinform', 'html/join.html');
     },
 
     create: function ()
     {
 
 
-        var text = this.add.text(10, 10, 'Please login to play', { color: 'white', fontFamily: 'Arial', fontSize: '32px '});
+        var text = this.add.text(10, 10, 'Please join to play', { color: 'white', fontFamily: 'Arial', fontSize: '32px '});
 
-        var element = this.add.dom(400, 600).createFromCache('nameform');
+        var element = this.add.dom(400, 600).createFromCache('joinform');
 
         element.setPerspective(800);
 
         element.addListener('click');
-    
+
         element.on('click', function (event) {
 
             if (event.target.name === 'loginButton')

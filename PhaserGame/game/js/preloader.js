@@ -21,7 +21,7 @@ var Preloader = new Phaser.Class({
 			}
 		});
 	},
-	
+
 	setPreloadSprite: function (sprite)
 	{
 		this.preloadSprite = { sprite: sprite, width: sprite.width, height: sprite.height };
@@ -33,7 +33,7 @@ var Preloader = new Phaser.Class({
 		this.load.on('progress', this.onProgress, this );
 		this.load.on('fileprogress', this.onFileProgress, this );
 	},
-	
+
 	onProgress: function (value) {
 
 		if (this.preloadSprite)
@@ -41,11 +41,11 @@ var Preloader = new Phaser.Class({
 			// calculate width based on value=0.0 .. 1.0
 			var w = Math.floor(this.preloadSprite.width * value);
 			console.log('onProgress: value=' + value + " w=" + w);
-			
+
 			// sprite.frame.width cannot be zero
 			//w = (w <= 0 ? 1 : w);
-			
-			// set width of sprite			
+
+			// set width of sprite
 			this.preloadSprite.sprite.frame.width    = (w <= 0 ? 1 : w);
 			this.preloadSprite.sprite.frame.cutWidth = w;
 
@@ -53,7 +53,7 @@ var Preloader = new Phaser.Class({
 			this.preloadSprite.sprite.frame.updateUVs();
 		}
 	},
-	
+
 	onFileProgress: function (file) {
 		console.log('onFileProgress: file.key=' + file.key);
 	},
@@ -71,33 +71,33 @@ var Preloader = new Phaser.Class({
 		this.loadingbar_bg   = this.add.sprite(400, 300, "loadingbar_bg");
 		this.loadingbar_fill = this.add.sprite(400, 300, "loadingbar_fill");
 		this.setPreloadSprite(this.loadingbar_fill);
-		
+
 		// now load images, audio etc.
 		// sprites, note: see free sprite atlas creation tool here https://www.leshylabs.com/apps/sstool/
 		this.load.atlas('sprite','src/sprites/spritesheet.png','src/sprites/sprites.json')
 		this.load.atlas('sprites', 'img/spritearray.png', 'img/spritearray.json');
-		
+
 		// font
 		this.load.bitmapFont('fontwhite', 'img/fontwhite.png', 'img/fontwhite.xml');
-		
+
 		// sound effects
 		//this.load.audio('bg', [this.p('audio/bg.mp3'),this.p('audio/bg.ogg')]);
 		this.load.audio('coin', ['snd/coin.mp3', 'snd/coin.ogg']);
 		this.load.audio('bomb', ['snd/expl.mp3', 'snd/expl.ogg']);
 		this.load.audio('btn',  ['snd/btn.mp3', 'snd/btn.ogg']);
-		
+
 		this.load.audio('getItem','src/sound/coin.mp3');
 		this.load.audio('go','src/sound/go.wav');
 		this.load.audio('explosion','src/sound/explosion.wav');
 		this.load.audio('setBomb','src/sound/bomb.wav');
 		this.load.audio('die','src/sound/die.wav');
 		this.load.audio('click','src/sound/click.wav');
-		
+
 		this.load.audio('bgm_menuscene','src/sound/music_broke_for_free_caught_in_the_beat_remix.wav');
 		this.load.audio('bgm_gamescene','src/sound/music_Jason_Shaw_Ecstasy_X.mp3');
-		
 
-		
+
+
 	},
 
 	create: function ()
@@ -230,7 +230,7 @@ var Preloader = new Phaser.Class({
 		});
 
 		//player_anmiation
-		
+
 		this.anims.create({
 			key:'player_down_w',
 			frames:[
@@ -307,7 +307,7 @@ var Preloader = new Phaser.Class({
 			yoyo:true,
 			repeat: -1
 		});
-		
+
 		// enemyPlayer
 		this.anims.create({
 			key:'player_down_r',
@@ -385,8 +385,8 @@ var Preloader = new Phaser.Class({
 			yoyo:true,
 			repeat: -1
 		});
-		
-		
+
+
 
 		// also create animations
 		this.anims.create({
@@ -404,7 +404,7 @@ var Preloader = new Phaser.Class({
 				frameRate: 15,
 				repeat: -1
 			});
-			
+
 		console.log('Preloader scene is ready, now start the actual game and never return to this scene');
 
 		// dispose loader bar images
@@ -413,6 +413,6 @@ var Preloader = new Phaser.Class({
 		this.preloadSprite = null;
 
 		// start actual game
-		this.scene.start('mainmenu');
+		this.scene.start('loginmenu');
 	}
 });
