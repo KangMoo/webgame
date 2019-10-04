@@ -42,26 +42,38 @@ var LoginMenu = new Phaser.Class({
                 var inputPassword = this.getChildByName('password');
 
                 //  Have they entered anything?
-                if (inputUsername.value !== '' && inputPassword.value !== '')
-                {
+                if (inputUsername.value !== '' && inputPassword.value !== ''){
                     //  Turn off the click events
-                    this.removeListener('click');
+                    var data={id:inputUsername.value,pw:inputPassword.value};
+                    var http=new XMLHttpRequest();
+                    http.open('POST','http://52.78.114.138:8000/login');
+                    http.setRequestHeader('Content-Type', 'application/json');
+                    http.send(JSON.stringify(data));
 
-                    //  Tween the login form out
-                    this.scene.tweens.add({ targets: element.rotate3d, x: 1, w: 90, duration: 3000, ease: 'Power3' });
+                    http.onload=function(){
+                      if(JSON.parse(http.responseText)=="ok"){//로그인 성공
+                        element.removeListener('click');
+                        console.log("haha");
+                        //  Tween the login form out
+                        element.scene.tweens.add({ targets: element.rotate3d, x: 1, w: 90, duration: 3000, ease: 'Power3' });
 
-                    this.scene.tweens.add({ targets: element, scaleX: 2, scaleY: 2, y: 700, duration: 3000, ease: 'Power3',
-                        onComplete: function ()
-                        {
-                            element.setVisible(false);
-                        }
-                    });
-
-                    //  Populate the text with whatever they typed in as the username!
-                    text.setText('Welcome ' + inputUsername.value);
-                }
-                else
-                {
+                        element.scene.tweens.add({ targets: element, scaleX: 2, scaleY: 2, y: 700, duration: 3000, ease: 'Power3',
+                            onComplete: function (){
+                                element.setVisible(false);
+                                sessionStorage.setItem('login', JSON.stringify({id:inputUsername.value}));
+                                // if(sessionStorage.getItem('login')){
+                                //   console.log(JSON.parse(sessionStorage.getItem('login')).id);
+                                // }
+                                //this.parent.scene.scene.start('gamescene');//메인 메뉴 만들어야할듯
+                            }
+                        });;
+                        //  Populate the text with whatever they typed in as the username!
+                        text.setText('Welcome ' + inputUsername.value);
+                      }else{//로그인 실패
+                        console.log("hoho");
+                      }
+                    }
+                }else{
                     //  Flash the prompt
                     this.scene.tweens.add({ targets: text, alpha: 0.1, duration: 200, ease: 'Power3', yoyo: true });
                 }
