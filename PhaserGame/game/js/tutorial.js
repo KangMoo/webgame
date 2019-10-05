@@ -21,7 +21,7 @@ var TutorScene = new Phaser.Class({
 		// add logo
 		//this.sys.config.backgroundColor = '#f3cca3';
         var logo = this.add.sprite(400, 100, 'sprites', 'phaser3');
-		
+
 		// text
 		var txt = this.add.bitmapText(400, 300, 'fontwhite', 'This is an example game.\nTake a look at the code\nto see how it works.');
 		txt.setOrigin(0.5).setCenterAlign();
@@ -35,7 +35,7 @@ var TutorScene = new Phaser.Class({
     doBack: function ()
     {
         console.log('doBack was called!');
-		this.scene.start('mainmenu');
+		    this.scene.start('loginmenu');
     }
 
 });
