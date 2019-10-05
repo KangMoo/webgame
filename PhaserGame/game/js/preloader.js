@@ -60,11 +60,12 @@ var Preloader = new Phaser.Class({
 
 	preload: function ()
 	{
+		//touch config
+		this.input.addPointer(2);
 		this.IS_TOUCH = false;
 		window.addEventListener('touchstart',function(){
 			IS_TOUCH = true;
 		});
-		console.log(this.IS_TOUCH);
 		this.io = io();
 		// setup the loading bar
 		// note: images are available during preload because of the pack-property in the constructor
@@ -102,7 +103,6 @@ var Preloader = new Phaser.Class({
 
 	create: function ()
 	{
-
 		this.anims.create({
 			key: 'explosion',
 			frames:[

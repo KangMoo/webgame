@@ -32,7 +32,7 @@ var GameScene = new Phaser.Class({
 	},
 
 	create: function () {
-
+		
 		//map setting
 		this.fTiles = this.add.group();
 		this.cTiles = this.physics.add.group({ immovable: true });
@@ -124,10 +124,16 @@ var GameScene = new Phaser.Class({
 		this.spacebar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 		// quit to menu button
 		this.btnquit = this.addButton(760, 40, 'sprites', this.doBack, this, 'btn_close_hl', 'btn_close', 'btn_close_hl', 'btn_close');
-	},
+		this.btnquit.on('pointerover',()=>{console.log('test!!')});
+		console.log('this.btnquit');
+		console.log(this.btnquit);
+;	},
 
 	update: function (time, delta) {
-
+		//if(this.input.pointer1.isDown)
+		//{
+		//	console.log(this.input.pointer1);
+		//}
 		this.player.setVelocity(0);
 		if (this.player.Info.state != STATE_DIE) {
 			if(this.cursors.up.isDown ||
