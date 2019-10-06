@@ -45,14 +45,15 @@ var JoinMenu = new Phaser.Class({
                     //  Turn off the click events
                     var data={id:inputUsername.value,pw:inputPassword.value};
                     var http=new XMLHttpRequest();
-                    http.open('POST','http://52.78.114.138:8000/login');
+                    http.open('POST','http://localhost:3000/users/join');
                     http.setRequestHeader('Content-Type', 'application/json');
                     http.send(JSON.stringify(data));
 
                     http.onload=function(){
-                      if(JSON.parse(http.responseText)=="ok"){//회원가입 성공
+                      var result = JSON.parse(http.responseText);
+                      if(result.result=="ok"){//회원가입 성공
                         element.removeListener('click');
-                        console.log("haha");
+                        console.log("회원가입 성공");
                         //  Tween the login form out
                         element.scene.tweens.add({ targets: element.rotate3d, x: 1, w: 90, duration: 3000, ease: 'Power3' });
 
@@ -65,7 +66,7 @@ var JoinMenu = new Phaser.Class({
                         //  Populate the text with whatever they typed in as the username!
                         //text.setText('Welcome ' + inputUsername.value);
                       }else{//회원가입 실패
-                        console.log("hoho");
+                        console.log("회원가입 실패");
                       }
                     }
                 }else{

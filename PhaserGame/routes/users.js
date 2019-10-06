@@ -28,30 +28,51 @@ router.get('/', function(req, res, next) {
 
 /* 로그인 */
 router.post("/login", async function(req, res, next){
-  let body = req.body;
+  console.log(req.body);
 
-  let result = await models.user.findOne({
-    where: {
-      email : body.userEmail
-    }
+  // `innodb`.`Users` (`UserEmail`, `UserPwd`, `UserName`)
+  var sql = 'SELECT * FROM `innodb`.`Users` WHERE UserEmail = ? and UserPwd = ?';
+  var params = [req.body.id, req.body.pw];
+
+  connection.query(sql, params, function (err, results, fields) {
+      console.log(results);
+
+      if (err) {
+          console.log(err);
+      } else if (results.length) {
+          var responseData = {'result' : 'ok', 'user' : results};
+          res.json(responseData);
+      }
   });
-
-  let dbPassword = result.dataValues.password;
-  let inputPassword = body.password;
-  let salt = result.dataValues.salt;
-  let hashPassword = crypto.createHash("sha512").update(inputPassword + salt).digest("hex");
-
-  if(dbPassword === hashPassword){
-    console.log("비밀번호 일치");
-    res.redirect("/users");
-  }
-  else{
-    console.log("비밀번호 불일치");
-    res.redirect("/users/login");
-  }
 });
 
 
-connection.end();
+/* 회원가입 */
+router.post("/join", async function(req, res, next){
+  console.log(req.body);
+
+  // `innodb`.`Users` (`UserEmail`, `UserPwd`, `UserName`)
+  var sql = 'INSERT INTO `innodb`.`Users` (`UserEmail`, `UserPwd`, `UserName`) VALUES (?, ?, ?)';
+  var params = [req.body.id, req.body.pw, 'user_name'];
+
+  connection.query(sql, params, function (err, results, fields) {
+      console.log(results);
+
+      if (err) {
+          console.log(err);
+          //console.log(err.code);
+
+          if (err.code == 'ER_DUP_ENTRY') {
+              var responseData = {'result' : 'error', 'reason' : 'duplicate'};
+              res.json(responseData);
+          }
+      } else if (results.length) {
+          var responseData = {'result' : 'ok', 'user' : results};
+          res.json(responseData);
+      }
+  });
+});
+
+//connection.end();
 
 module.exports = router;

@@ -46,14 +46,17 @@ var LoginMenu = new Phaser.Class({
                     //  Turn off the click events
                     var data={id:inputUsername.value,pw:inputPassword.value};
                     var http=new XMLHttpRequest();
-                    http.open('POST','http://52.78.114.138:8000/login');
+                    http.open('POST','http://localhost:3000/users/login');
                     http.setRequestHeader('Content-Type', 'application/json');
                     http.send(JSON.stringify(data));
 
                     http.onload=function(){
-                      if(JSON.parse(http.responseText)=="ok"){//로그인 성공
+                      var result = JSON.parse(http.responseText);
+                      if(result.result=="ok"){//로그인 성공
                         element.removeListener('click');
-                        console.log("haha");
+                        console.log("로그인 성공");
+                        //console.log("User: ", result.user);
+
                         //  Tween the login form out
                         element.scene.tweens.add({ targets: element.rotate3d, x: 1, w: 90, duration: 3000, ease: 'Power3' });
 
@@ -70,7 +73,7 @@ var LoginMenu = new Phaser.Class({
                         //  Populate the text with whatever they typed in as the username!
                         text.setText('Welcome ' + inputUsername.value);
                       }else{//로그인 실패
-                        console.log("hoho");
+                        console.log("로그인 실패");
                       }
                     }
                 }else{
