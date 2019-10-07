@@ -14,7 +14,7 @@ var MainMenu = new Phaser.Class({
 
     preload: function ()
     {
-        this.load.html('nameform', 'html/login.html');
+        
     },
 
     create: function ()

@@ -52,9 +52,9 @@ var LoginMenu = new Phaser.Class({
 
                     http.onload=function(){
                       var result = JSON.parse(http.responseText);
-                      if(result.result=="ok"){//ë¡œê·¸ì¸ ì„±ê³µ
+                      if(result.result=="ok"){//ë¡œê·¸?¸ ?„±ê³?
                         element.removeListener('click');
-                        console.log("ë¡œê·¸ì¸ ì„±ê³µ");
+                        console.log("ë¡œê·¸?¸ ?„±ê³?");
                         //console.log("User: ", result.user);
 
                         //  Tween the login form out
@@ -67,13 +67,13 @@ var LoginMenu = new Phaser.Class({
                                 // if(sessionStorage.getItem('login')){
                                 //   console.log(JSON.parse(sessionStorage.getItem('login')).id);
                                 // }
-                                //this.parent.scene.scene.start('gamescene');//ë©”ì¸ ë©”ë‰´ ë§Œë“¤ì–´ì•¼í• ë“¯
+                                //this.parent.scene.scene.start('gamescene');//ë©”ì¸ ë©”ë‰´ ë§Œë“¤?–´?•¼?• ?“¯
                             }
                         });;
                         //  Populate the text with whatever they typed in as the username!
                         text.setText('Welcome ' + inputUsername.value);
-                      }else{//ë¡œê·¸ì¸ ì‹¤íŒ¨
-                        console.log("ë¡œê·¸ì¸ ì‹¤íŒ¨");
+                      }else{//ë¡œê·¸?¸ ?‹¤?Œ¨
+                        console.log("ë¡œê·¸?¸ ?‹¤?Œ¨");
                       }
                     }
                 }else{
@@ -97,7 +97,8 @@ var LoginMenu = new Phaser.Class({
 	  doStart: function ()
     {
         console.log('menuscene doStart was called!');
-        this.scene.start('gamescene','test');
+        //this.scene.start('gamescene','test');
+        this.scene.start('lobbyscene');
     }
 
 });

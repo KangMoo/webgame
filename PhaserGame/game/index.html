@@ -6,6 +6,8 @@
 	<script src="/socket.io/socket.io.js"></script>
 	<script src="js/phaser.min.js"></script>
 	<script src="js/phaser_addon.js"></script>
+	<script src="js/lobby.js"></script>
+	<script src="js/room.js"></script>
 	<script src="js/preloader.js"></script>
 	<script src="js/joinscene.js"></script>
 	<script src="js/loginscene.js"></script>
@@ -38,7 +40,7 @@
 				mode: Phaser.Scale.FIT,
 				autoCenter: Phaser.Scale.CENTER_BOTH
 			},
-			scene: [Preloader, JoinMenu, LoginMenu, TutorScene, GameScene]
+			scene: [Preloader, JoinMenu, LobbyScene, RoomScene, LoginMenu, TutorScene, GameScene]
 		};
 
 

@@ -124,7 +124,7 @@ var GameScene = new Phaser.Class({
 		this.spacebar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 		// quit to menu button
 		this.btnquit = this.addButton(760, 40, 'sprites', this.doBack, this, 'btn_close_hl', 'btn_close', 'btn_close_hl', 'btn_close');
-;	},
+	},
 
 	update: function (time, delta) {
 		//if(this.input.pointer1.isDown)

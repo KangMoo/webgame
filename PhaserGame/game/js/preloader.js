@@ -60,6 +60,11 @@ var Preloader = new Phaser.Class({
 
 	preload: function ()
 	{
+		this.load.html('joinform', 'html/join.html');
+		this.load.html('nameform', 'html/login.html');
+		this.load.html('createroomform', 'html/createroom.html');
+
+
 		//touch config
 		this.input.addPointer(2);
 		this.IS_TOUCH = false;
@@ -75,7 +80,8 @@ var Preloader = new Phaser.Class({
 
 		// now load images, audio etc.
 		// sprites, note: see free sprite atlas creation tool here https://www.leshylabs.com/apps/sstool/
-		this.load.atlas('sprite','src/sprites/spritesheet.png','src/sprites/sprites.json')
+		this.load.atlas('sprite','src/sprites/spritesheet.png','src/sprites/sprites.json');
+		this.load.atlas('uisprite','src/sprites/uispritesheet.png','src/sprites/uispritesheet.json')
 		this.load.atlas('sprites', 'img/spritearray.png', 'img/spritearray.json');
 
 		// font
