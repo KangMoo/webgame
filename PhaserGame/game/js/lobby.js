@@ -32,7 +32,7 @@ var LobbyScene = new Phaser.Class({
         //socket ~
         this.socket.on('aswrooms', (data) => {
             for (var i = 0; i < 5; i++) {
-                this.rooms[i].state = data[i];
+                this.rooms[i].state = data[i].roomstate;
                 if (this.rooms[i].state == ROOMEMPTY) {
                     this.txts[i]._text = 'Empty';
                 }
@@ -91,8 +91,7 @@ var LobbyScene = new Phaser.Class({
                                 delay: 10000
                             }
                         );
-
-                        this.scene.socket.emit('enterroom', i);
+                        this.scene.socket.emit('enterroom', room.number);
                     }
                     else if (this.state == ROOMFULL || this.state == ROOMPLAYING) {
                         var txt = this.scene.add.bitmapText(400, 600 - 100, 'fontwhite', 'Can not Enter Room!!');
