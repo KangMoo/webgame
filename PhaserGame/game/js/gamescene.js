@@ -124,9 +124,6 @@ var GameScene = new Phaser.Class({
 		this.spacebar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 		// quit to menu button
 		this.btnquit = this.addButton(760, 40, 'sprites', this.doBack, this, 'btn_close_hl', 'btn_close', 'btn_close_hl', 'btn_close');
-		this.btnquit.on('pointerover',()=>{console.log('test!!')});
-		console.log('this.btnquit');
-		console.log(this.btnquit);
 ;	},
 
 	update: function (time, delta) {
@@ -413,8 +410,7 @@ var GameScene = new Phaser.Class({
 	ovlFlameBTile: function (flame, tile) {
 		if(this.TILES[parseInt(tile.x / TILE_SIZE_X)][parseInt(tile.y / TILE_SIZE_Y)] == 0)
 			return;
-		this.TILES[parseInt(tile.x / TILE_SIZE_X)][parseInt(tile.y / TILE_SIZE_Y)] = 0;
-		//this.itemRndAdd(tile.x, tile.y);
+		
 		
 			this.tweens.add({
 				targets: tile,
@@ -422,8 +418,11 @@ var GameScene = new Phaser.Class({
 				alpha: 0,
 
 				onComplete: () => { 
+					
+					if(this.TILES[parseInt(tile.x / TILE_SIZE_X)][parseInt(tile.y / TILE_SIZE_Y)] != 0)
+						this.itemRndAdd(tile.x, tile.y);
+					this.TILES[parseInt(tile.x / TILE_SIZE_X)][parseInt(tile.y / TILE_SIZE_Y)] = 0;
 					tile.destroy();
-					this.itemRndAdd(tile.x, tile.y);
 					}
 			});
 		
