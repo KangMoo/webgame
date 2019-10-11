@@ -62,6 +62,7 @@ var Preloader = new Phaser.Class({
 	{
 		this.load.html('joinform', 'html/join.html');
 		this.load.html('nameform', 'html/login.html');
+		this.load.html('chattingBox', 'html/chattingBox.html');
 		this.load.html('createroomform', 'html/createroom.html');
 
 
@@ -71,7 +72,7 @@ var Preloader = new Phaser.Class({
 		window.addEventListener('touchstart',function(){
 			IS_TOUCH = true;
 		});
-		this.io = io();
+		this.socket = io();
 		// setup the loading bar
 		// note: images are available during preload because of the pack-property in the constructor
 		this.loadingbar_bg   = this.add.sprite(400, 300, "loadingbar_bg");

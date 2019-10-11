@@ -28,7 +28,7 @@ var LobbyScene = new Phaser.Class({
         this.txts = [];
 
         
-        this.socket = io('/lobby');
+        this.socket = io();
         //socket ~
         this.socket.on('aswrooms', (data) => {
             for (var i = 0; i < 5; i++) {
@@ -61,15 +61,13 @@ var LobbyScene = new Phaser.Class({
                 }
             );
         });
-        this.socket.on('goToRoom', (data) => {
-            this.scene.start('roomscene');
+        this.socket.on('ChangeRoomScene', (roomNum) => {
+            this.scene.start('roomscene',roomNum);
         });
 
         // ~ socket
         for (var i = 0; i < 5; i++) {
             var room = this.add.image(this.game.config.width / 2, i * 90 + 50, 'uisprite', 'b_1').setInteractive();
-
-            room.number = i;
             room.state = ROOMEMPTY;
             room.displayWidth = 400;
             room.displayHeight = 80;
@@ -78,6 +76,10 @@ var LobbyScene = new Phaser.Class({
                 this.displayHeight = 65;
             });
             room.on('pointerup', function (ptr) {
+                
+                var roomnum = String(parseInt((ptr.y+25+80)/90-1));
+                console.log(ptr.y, roomnum);
+
                 if (this.displayWidth == 385) {
                     if (this.state == ROOMEMPTY || this.state == ROOMWAITING) {
                         var txt = this.scene.add.bitmapText(400, 600 - 100, 'fontwhite', 'Entering...');
@@ -91,7 +93,7 @@ var LobbyScene = new Phaser.Class({
                                 delay: 10000
                             }
                         );
-                        this.scene.socket.emit('enterroom', room.number);
+                        this.scene.socket.emit('enterroom', roomnum,'tester');
                     }
                     else if (this.state == ROOMFULL || this.state == ROOMPLAYING) {
                         var txt = this.scene.add.bitmapText(400, 600 - 100, 'fontwhite', 'Can not Enter Room!!');
