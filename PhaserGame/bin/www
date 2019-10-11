@@ -46,6 +46,7 @@ var io = require('socket.io')(server);
 
 var nps_lobby = io.on('connection', function (socket) {
   socket.on('rqrooms', () => {
+    updateRoomsInfo();
     socket.emit('aswrooms', rooms);
   });
 
@@ -56,14 +57,7 @@ var nps_lobby = io.on('connection', function (socket) {
       socket.emit('serverMsg', 'Can not enter room!!');
     }
     else {
-      rooms[roomnum].playerNum++;
-      if (rooms[roomnum].playerNum == 1) {
-        rooms[roomnum].roomstate = ROOMWAITING;
-      }
-      else if (rooms[roomnum].playerNum == 2) {
-        rooms[roomnum].roomstate = ROOMFULL;
-      }
-      console.log(rooms[roomnum]);
+      updateRoomsInfo();
       socket.emit('ChangeRoomScene', roomnum);
     }
   });
@@ -89,14 +83,27 @@ var nps_lobby = io.on('connection', function (socket) {
   });
 
   socket.on('C2S_state', (text) => {
-
   });
-
+  //if (io.sockets.adapter.rooms['0']) 
+  //{
+  //  console.log("test:" + io.sockets.adapter.rooms['0'].length);
+  //}
 });
+
+
 
 function updateRoomsInfo() {
 
   for (var i = 0; i < 5; i++) {
+    if (io.sockets.adapter.rooms[String(i)]) 
+    {
+      var clientNum = io.sockets.adapter.rooms[String(i)].length;
+      rooms[i].playerNum = clientNum;
+    }
+    else
+    {
+      rooms[i].playerNum=0;
+    }
     if (rooms[i].playerNum == 0) rooms[i].roomstate = ROOMEMPTY;
     else if (rooms[i].playerNum == 1) rooms[i].roomstate = ROOMWAITING;
     else if (rooms[i].playerNum == 2) rooms[i].roomstate = ROOMFULL;
