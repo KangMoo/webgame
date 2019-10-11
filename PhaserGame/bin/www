@@ -31,48 +31,40 @@ const ROOMPLAYING = 8;
 var roomNum;
 
 //test~
-roomNum=11;
+roomNum = 11;
 //~test
 
 var rooms = [];
-for(var i =0;i<5;i++)
-{
+for (var i = 0; i < 5; i++) {
   rooms.push({
-    playerNum:0,
-    roomstate:ROOMEMPTY});
-}
-
-//test~
-rooms[1].roomstate=ROOMWAITING;
-rooms[2].roomstate=ROOMFULL;
-rooms[3].roomstate=ROOMPLAYING;
-
-var roomsChatting = [];
-for(var i =0;i<5;i++)
-{
-  rooms.push({
-    p1chatting:"",
-    p2chatting:""
+    playerNum: 0,
+    roomstate: ROOMEMPTY
   });
 }
 
-//~test
 var io = require('socket.io')(server);
 
-var nps_lobby = io.on('connection',function(socket){
-  socket.on('rqrooms', () =>{
-    socket.emit('aswrooms',rooms);
+var nps_lobby = io.on('connection', function (socket) {
+  socket.on('rqrooms', () => {
+    socket.emit('aswrooms', rooms);
   });
 
   socket.on('enterroom', (roomnum, name) => {
-    if(rooms[roomnum].roomstate == ROOMFULL || rooms[roomnum].roomstate == ROOMPLAYING)
-    {
-      socket.emit('aswrooms',rooms);
-      socket.emit('serverMsg','Can not enter room!!');
+    console.log(roomnum);
+    if (rooms[roomnum].roomstate == ROOMFULL || rooms[roomnum].roomstate == ROOMPLAYING) {
+      socket.emit('aswrooms', rooms);
+      socket.emit('serverMsg', 'Can not enter room!!');
     }
-    else
-    {
-      socket.emit('ChangeRoomScene',roomnum);
+    else {
+      rooms[roomnum].playerNum++;
+      if (rooms[roomnum].playerNum == 1) {
+        rooms[roomnum].roomstate = ROOMWAITING;
+      }
+      else if (rooms[roomnum].playerNum == 2) {
+        rooms[roomnum].roomstate = ROOMFULL;
+      }
+      console.log(rooms[roomnum]);
+      socket.emit('ChangeRoomScene', roomnum);
     }
   });
 
@@ -89,19 +81,27 @@ var nps_lobby = io.on('connection',function(socket){
   });
 
 
-  socket.on('C2S_chatting',(roomnum,text)=>{
-    if(text != "")
-      io.to(roomnum).emit('S2C_chatting',text);
+  socket.on('C2S_chatting', (roomnum, text) => {
+    if (text != "")
+      io.to(roomnum).emit('S2C_chatting', text);
     console.log(roomnum, text);
-      //nps_room.emit('S2C_chatting',text);
+    //nps_room.emit('S2C_chatting',text);
   });
 
-  socket.on('C2S_state',(text)=>{
+  socket.on('C2S_state', (text) => {
 
   });
 
 });
 
+function updateRoomsInfo() {
+
+  for (var i = 0; i < 5; i++) {
+    if (rooms[i].playerNum == 0) rooms[i].roomstate = ROOMEMPTY;
+    else if (rooms[i].playerNum == 1) rooms[i].roomstate = ROOMWAITING;
+    else if (rooms[i].playerNum == 2) rooms[i].roomstate = ROOMFULL;
+  }
+}
 
 
 
