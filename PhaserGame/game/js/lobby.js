@@ -61,8 +61,13 @@ var LobbyScene = new Phaser.Class({
                 }
             );
         });
-        this.socket.on('ChangeRoomScene', (roomNum) => {
-            this.scene.start('roomscene',roomNum);
+        this.socket.on('ChangeRoomScene', (roomNum,pnum) => {
+            var setting = {
+                roomnum:roomNum,
+                pnum:pnum
+            };
+            this.scene.start('roomscene',setting);
+            
         });
 
         // ~ socket
@@ -78,7 +83,6 @@ var LobbyScene = new Phaser.Class({
             room.on('pointerup', function (ptr) {
                 
                 var roomnum = String(parseInt((ptr.y+25+80)/90-1));
-                console.log(ptr.y, roomnum);
 
                 if (this.displayWidth == 385) {
                     if (this.state == ROOMEMPTY || this.state == ROOMWAITING) {

@@ -1,8 +1,15 @@
 
 var roomnum;
+var pnum;
 var player = {};
 var opponent = {};
 var roomUi = {};
+
+var players = [];
+
+const playerpositions = [
+    {x:150,y:150},{x:800-150,y:150}
+];
 
 const STATE_EMPTY = 1;
 const STATE_WAITING = 2;
@@ -18,7 +25,8 @@ var RoomScene = new Phaser.Class({
         Phaser.Scene.call(this, { key: 'roomscene' });
     },
     init: function (settings) {
-        roomnum = settings;
+        roomnum = settings.roomnum;
+        pnum = settings.pnum;
 	},
     preload: function ()
     {
@@ -26,10 +34,7 @@ var RoomScene = new Phaser.Class({
 
     create: function ()
     {
-        console.log(roomnum);
-        this.socket = io();
-        this.socket.emit('joinRoom',roomnum,'tester');
-
+        // UI Init ~
         roomUi.leftBox1 = this.add.image(150, 150, 'uisprite', 'b_1');
         roomUi.leftBox1.displayWidth = 150;
         roomUi.leftBox1.displayHeight = 150;
@@ -38,8 +43,8 @@ var RoomScene = new Phaser.Class({
         roomUi.leftBox2.displayWidth = 150;
         roomUi.leftBox2.displayHeight = 80;
 
-        roomUi.leftStateText = this.add.bitmapText(150, 265, 'fontwhite', 'Waiting',30);
-        roomUi.leftStateText.setOrigin(0.5).setCenterAlign();
+        //roomUi.leftStateText = this.add.bitmapText(150, 265, 'fontwhite', 'Waiting',30);
+        //roomUi.leftStateText.setOrigin(0.5).setCenterAlign();
 
 
         roomUi.rightBox1 = this.add.image(this.game.config.width-150, 150, 'uisprite', 'b_1');
@@ -50,14 +55,35 @@ var RoomScene = new Phaser.Class({
         roomUi.rightBox2.displayWidth = 150;
         roomUi.rightBox2.displayHeight = 80;
 
-        
-        
-        player.Img = this.add.image(150,150,'sprite','player_37');
-        player.state = STATE_WAITING;
-        opponent.Img = this.add.image(this.game.config.width-150,150,'sprite','player_19');
-        opponent.state = STATE_EMPTY;
-        //opponent.Img.visible = false;
+        // ~ UI Init
 
+
+        for(var i =0; i<2;i++)
+        {
+            players.push({
+                Img:this.physics.add.sprite(playerpositions[i].x,playerpositions[i].y, 'sprite'),
+                state :STATE_WAITING,
+                stateText:this.add.bitmapText(playerpositions[i].x,playerpositions[i].y+115, 'fontwhite', 'Waiting',30).setOrigin(0.5).setCenterAlign(),
+                pnum : i+1
+            });
+            if(i+1==pnum)
+            {
+                players[i].Img.anims.play('player_down_w',true);
+            }
+            else
+            {
+                players[i].Img.anims.play('player_down_r',true);
+                players[i].Img.visible = false;
+                players[i].stateText.visible = false;
+            }
+        }
+        
+        this.socket = io();
+        
+        
+        
+        
+        var player = this.getCharacter(pnum);
         
         roomUi.chattingBox = this.add.dom(400, 450).createFromCache('chattingBox');
         
@@ -66,7 +92,7 @@ var RoomScene = new Phaser.Class({
             if(event.target.name == 'submit')
             {
                 var text = this.getChildByName('inputBox').value;
-                this.scene.socket.emit('C2S_chatting',roomnum,text);
+                this.scene.socket.emit('chatting',text,player.pnum);
                 this.getChildByName('inputBox').value = "";
             }
             else if(event.target.name == 'ready')
@@ -74,28 +100,34 @@ var RoomScene = new Phaser.Class({
                 if(player.state == STATE_WAITING)
                 {
                     player.state = STATE_READY;
-                    roomUi.leftStateText._text = "READY!";
+                    player = this.scene.PlayerStateUpdate(player);
                 }
                 else if(player.state == STATE_READY)
                 {
                     player.state = STATE_WAITING;
-                    roomUi.leftStateText._text = "Waiting";
+                    player = this.scene.PlayerStateUpdate(player);
                 }
 
-                this.scene.socket.emit('C2S_state',player.state);
+                this.scene.socket.emit('ChgState',player.state,pnum);
             }
         });
-
-        this.socket.on('S2C_chatting',(text)=>{
+        this.socket.on('broadcastInfo',()=>{
+            this.socket.emit('ChgState',player.state,pnum);
+        });
+        
+        this.socket.on('ChgState',(state,pnum)=>{
+            var user = this.getCharacter(pnum);
+            user.state = state;
+            this.PlayerStateUpdate(user);
+        })
+        this.socket.on('chatting',(text,id)=>{
             roomUi.chattingBox.getChildByName('chatBox').value += '\n'+text;
             var cb = roomUi.chattingBox.getChildByName('chatBox');
             cb.scrollTop = cb.scrollHeight;
         });
-        this.socket.on('S2C_state',(states)=>
-        {
-
-        });
-
+        
+        this.socket.emit('joinRoom',roomnum,pnum);
+        //test~
         var txt = this.add.bitmapText(400, 300, 'fontwhite', 'RoomScene!');
         txt.setOrigin(0.5).setCenterAlign();
         this.btnstart = this.addButton(800, 500, 'sprites', this.doStart, this, 'btn_play_hl', 'btn_play', 'btn_play_hl', 'btn_play');
@@ -104,13 +136,40 @@ var RoomScene = new Phaser.Class({
 	doStart: function ()
     {
         console.log('menuscene doStart was called!');
-        //this.scene.start('gamescene','test');
         this.scene.start('gamescene');
     },
 
     update: function()
     {
+    },
 
+    PlayerStateUpdate:function(userInfo)
+    {
+        if(userInfo.state== STATE_EMPTY)
+        {
+            userInfo.stateText.visible = false;
+            userInfo.Img.visible = false;
+        }
+        else if(userInfo.state == STATE_WAITING)
+        {
+            userInfo.stateText._text = 'Waiting';
+            userInfo.stateText.visible = true;
+            userInfo.Img.visible = true;
+        }
+        else if(userInfo.state == STATE_READY)
+        {
+            userInfo.stateText._text = 'READY!';
+            userInfo.stateText.visible = true;
+            userInfo.Img.visible = true;
+        }
+        return userInfo;
+    },
+    getCharacter:function(num)
+    {
+        for(var i =0; i<players.length;i++)
+        {
+            if(players[i].pnum == num)
+                return players[i];
+        }
     }
-
 });
