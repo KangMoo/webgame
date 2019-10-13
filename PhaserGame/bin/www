@@ -28,17 +28,12 @@ const ROOMWAITING = 2;
 const ROOMFULL = 4;
 const ROOMPLAYING = 8;
 
-var roomNum;
-
-//test~
-roomNum = 11;
-//~test
 
 var rooms = [];
 for (var i = 0; i < 5; i++) {
   rooms.push({
     playerNum: 0,
-    roomstate: ROOMEMPTY
+    roomstate: ROOMEMPTY,
   });
 }
 
@@ -71,16 +66,16 @@ var nps_lobby = io.on('connection', function (socket) {
     socket.join(roomnum);
     io.emit('broadcastInfo');
   });
-  socket.on('broadcastInfo',()=>{});
+  socket.on('broadcastInfo',()=>{
+  });
   
   socket.on('ChgState',(state,pnum)=>{
     io.emit('ChgState',state,pnum);
   })
 
-  socket.on('leaveRoom', (roomnum, name) => {
-    socket.leave(roomnum, () => {
-      io.to(roomnum).emit('leaveRoom', roomnum, name);
-    });
+  socket.on('leaveRoom', (roomnum, pnum) => {
+    io.emit('refresh');
+    socket.leave(roomnum);
   });
 
   socket.on('chatting',(text,id)=>{
@@ -89,7 +84,8 @@ var nps_lobby = io.on('connection', function (socket) {
   // ~roomScene
 
   socket.on('disconnect',()=>{
-    
+    //io.emit('disconnect');
+    io.emit('refresh');
   });
 });
 
@@ -110,27 +106,6 @@ function updateRoomsInfo() {
     else if (rooms[i].playerNum == 2) rooms[i].roomstate = ROOMFULL;
   }
 }
-
-
-
-/*
-io.on('connection',(socket)=>{
-  socket.join(roomNum);
-  console.log("connected");
-
-  socket.on('C2S',(data)=>{
-    socket.broadcast.to(roomNum).emit('S2C',data);
-    //socket.broadcast.emit('S2C',data);
-    //io.emit('S2C',data);
-    //io.emit('S2C',{x:data.x,y:data.y});
-  });
-  socket.on('disconnect',()=>{
-    socket.leave(roomNum);
-    console.log('disconnected');
-  })
-})
-*/
-// ~ socket Ελ½Ε
 
 
 /**

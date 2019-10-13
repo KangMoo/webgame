@@ -1,16 +1,9 @@
 
-var roomnum;
-var pnum;
-var player = {};
-var opponent = {};
-var roomUi = {};
-
-var players = [];
 
 const playerpositions = [
     {x:150,y:150},{x:800-150,y:150}
 ];
-
+const MAXPLAYERNUM = 2;
 const STATE_EMPTY = 1;
 const STATE_WAITING = 2;
 const STATE_READY = 4;
@@ -25,8 +18,8 @@ var RoomScene = new Phaser.Class({
         Phaser.Scene.call(this, { key: 'roomscene' });
     },
     init: function (settings) {
-        roomnum = settings.roomnum;
-        pnum = settings.pnum;
+        this.roomnum = settings.roomnum;
+        this.pnum = settings.pnum;
 	},
     preload: function ()
     {
@@ -34,47 +27,55 @@ var RoomScene = new Phaser.Class({
 
     create: function ()
     {
-        // UI Init ~
-        roomUi.leftBox1 = this.add.image(150, 150, 'uisprite', 'b_1');
-        roomUi.leftBox1.displayWidth = 150;
-        roomUi.leftBox1.displayHeight = 150;
 
-        roomUi.leftBox2 = this.add.image(150, 270, 'uisprite', 'b_1');
-        roomUi.leftBox2.displayWidth = 150;
-        roomUi.leftBox2.displayHeight = 80;
+        this.roomnum;
+        this.pnum;
+        this.player = {};
+        this.opponent = {};
+        this.roomUi = {};
+        this.players = [];
+
+        // UI Init ~
+        this.roomUi.leftBox1 = this.add.image(150, 150, 'uisprite', 'b_1');
+        this.roomUi.leftBox1.displayWidth = 150;
+        this.roomUi.leftBox1.displayHeight = 150;
+
+        this.roomUi.leftBox2 = this.add.image(150, 270, 'uisprite', 'b_1');
+        this.roomUi.leftBox2.displayWidth = 150;
+        this.roomUi.leftBox2.displayHeight = 80;
 
         //roomUi.leftStateText = this.add.bitmapText(150, 265, 'fontwhite', 'Waiting',30);
         //roomUi.leftStateText.setOrigin(0.5).setCenterAlign();
 
 
-        roomUi.rightBox1 = this.add.image(this.game.config.width-150, 150, 'uisprite', 'b_1');
-        roomUi.rightBox1.displayWidth = 150;
-        roomUi.rightBox1.displayHeight = 150;
+        this.roomUi.rightBox1 = this.add.image(this.game.config.width-150, 150, 'uisprite', 'b_1');
+        this.roomUi.rightBox1.displayWidth = 150;
+        this.roomUi.rightBox1.displayHeight = 150;
 
-        roomUi.rightBox2 = this.add.image(this.game.config.width-150, 270, 'uisprite', 'b_1');
-        roomUi.rightBox2.displayWidth = 150;
-        roomUi.rightBox2.displayHeight = 80;
+        this.roomUi.rightBox2 = this.add.image(this.game.config.width-150, 270, 'uisprite', 'b_1');
+        this.roomUi.rightBox2.displayWidth = 150;
+        this.roomUi.rightBox2.displayHeight = 80;
 
         // ~ UI Init
 
 
-        for(var i =0; i<2;i++)
+        for(var i =0; i<MAXPLAYERNUM;i++)
         {
-            players.push({
+            this.players.push({
                 Img:this.physics.add.sprite(playerpositions[i].x,playerpositions[i].y, 'sprite'),
                 state :STATE_WAITING,
                 stateText:this.add.bitmapText(playerpositions[i].x,playerpositions[i].y+115, 'fontwhite', 'Waiting',30).setOrigin(0.5).setCenterAlign(),
                 pnum : i+1
             });
-            if(i+1==pnum)
+            if(i+1==this.pnum)
             {
-                players[i].Img.anims.play('player_down_w',true);
+                this.players[i].Img.anims.play('player_down_w');
             }
             else
             {
-                players[i].Img.anims.play('player_down_r',true);
-                players[i].Img.visible = false;
-                players[i].stateText.visible = false;
+                this.players[i].Img.anims.play('player_down_r');
+                this.players[i].Img.visible = false;
+                this.players[i].stateText.visible = false;
             }
         }
         
@@ -83,50 +84,70 @@ var RoomScene = new Phaser.Class({
         
         
         
-        var player = this.getCharacter(pnum);
+        this.player = this.getCharacter(this.pnum);
         
-        roomUi.chattingBox = this.add.dom(400, 450).createFromCache('chattingBox');
+        this.roomUi.chattingBox = this.add.dom(400, 450).createFromCache('chattingBox');
         
-        roomUi.chattingBox.addListener('click');
-        roomUi.chattingBox.on('click', function (event) {
+        this.roomUi.chattingBox.addListener('click');
+        this.roomUi.chattingBox.on('click', function (event) {
             if(event.target.name == 'submit')
             {
                 var text = this.getChildByName('inputBox').value;
-                this.scene.socket.emit('chatting',text,player.pnum);
+                this.scene.socket.emit('chatting',text,this.scene.player.pnum);
                 this.getChildByName('inputBox').value = "";
             }
             else if(event.target.name == 'ready')
             {
-                if(player.state == STATE_WAITING)
+                if(this.scene.player.state == STATE_WAITING)
                 {
-                    player.state = STATE_READY;
-                    player = this.scene.PlayerStateUpdate(player);
+                    this.scene.player.state = STATE_READY;
+                    this.scene.player = this.scene.PlayerStateUpdate(this.scene.player);
                 }
-                else if(player.state == STATE_READY)
+                else if(this.scene.player.state == STATE_READY)
                 {
-                    player.state = STATE_WAITING;
-                    player = this.scene.PlayerStateUpdate(player);
+                    this.scene.player.state = STATE_WAITING;
+                    this.scene.player = this.scene.PlayerStateUpdate(this.scene.player);
                 }
 
-                this.scene.socket.emit('ChgState',player.state,pnum);
+                this.scene.socket.emit('ChgState',this.scene.player.state,this.scene.pnum);
             }
         });
         this.socket.on('broadcastInfo',()=>{
-            this.socket.emit('ChgState',player.state,pnum);
+            this.socket.emit('ChgState',this.player.state,this.pnum);
         });
         
         this.socket.on('ChgState',(state,pnum)=>{
+            for(var i = 0; i<this.players.length;i++)
+            {
+                if(i+1 == this.pnum) continue;
+                this.players[i].state = STATE_EMPTY;
+            }
             var user = this.getCharacter(pnum);
             user.state = state;
             this.PlayerStateUpdate(user);
         })
         this.socket.on('chatting',(text,id)=>{
-            roomUi.chattingBox.getChildByName('chatBox').value += '\n'+text;
-            var cb = roomUi.chattingBox.getChildByName('chatBox');
+            this.roomUi.chattingBox.getChildByName('chatBox').value += '\n'+text;
+            var cb = this.roomUi.chattingBox.getChildByName('chatBox');
             cb.scrollTop = cb.scrollHeight;
         });
-        
-        this.socket.emit('joinRoom',roomnum,pnum);
+        this.socket.on('disconnect',()=>{
+            
+        });
+        this.socket.on('refresh',()=>{
+            console.log('refresh');
+            for(var i =0;i<this.players.length;i++)
+            {
+                if(i+1==this.pnum) continue;
+                this.players[i].state = STATE_EMPTY;
+                this.PlayerStateUpdate(this.players[i]);
+            }
+            this.socket.emit('ChgState',this.player.state,this.pnum);
+        })
+        this.socket.emit('joinRoom',this.roomnum,this.pnum);
+
+        this.btnquit = this.addButton(760, 40, 'sprites', this.doBack, this, 'btn_close_hl', 'btn_close', 'btn_close_hl', 'btn_close');
+
         //test~
         var txt = this.add.bitmapText(400, 300, 'fontwhite', 'RoomScene!');
         txt.setOrigin(0.5).setCenterAlign();
@@ -166,10 +187,16 @@ var RoomScene = new Phaser.Class({
     },
     getCharacter:function(num)
     {
-        for(var i =0; i<players.length;i++)
+        for(var i =0; i<this.players.length;i++)
         {
-            if(players[i].pnum == num)
-                return players[i];
+            if(this.players[i].pnum == num)
+                return this.players[i];
         }
+    },
+    doBack:function()
+    {
+        this.player.state=STATE_EMPTY;
+        this.socket.emit('leaveRoom',this.roomnum,this.pnum);
+        this.scene.start('lobbyscene');
     }
 });
