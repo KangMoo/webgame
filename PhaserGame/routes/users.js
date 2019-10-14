@@ -28,7 +28,7 @@ router.get('/', function(req, res, next) {
 
 /* 로그인 */
 router.post("/login", async function(req, res, next){
-  console.log(req.body);
+  //console.log(req.body);
 
   // `innodb`.`Users` (`UserEmail`, `UserPwd`, `UserName`)
   var sql = 'SELECT * FROM `innodb`.`Users` WHERE UserEmail = ? and UserPwd = ?';
@@ -39,7 +39,7 @@ router.post("/login", async function(req, res, next){
 
       if (err) {
           console.log(err);
-      } else if (results.length) {
+      } else if (!err) {
           var responseData = {'result' : 'ok', 'user' : results};
           res.json(responseData);
       }
@@ -49,7 +49,7 @@ router.post("/login", async function(req, res, next){
 
 /* 회원가입 */
 router.post("/join", async function(req, res, next){
-  console.log(req.body);
+  //console.log(req.body);
 
   // `innodb`.`Users` (`UserEmail`, `UserPwd`, `UserName`)
   var sql = 'INSERT INTO `innodb`.`Users` (`UserEmail`, `UserPwd`, `UserName`) VALUES (?, ?, ?)';
@@ -66,7 +66,7 @@ router.post("/join", async function(req, res, next){
               var responseData = {'result' : 'error', 'reason' : 'duplicate'};
               res.json(responseData);
           }
-      } else if (results.length) {
+      } else if (!err) {
           var responseData = {'result' : 'ok', 'user' : results};
           res.json(responseData);
       }

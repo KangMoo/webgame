@@ -14,7 +14,7 @@ var JoinMenu = new Phaser.Class({
 
     preload: function ()
     {
-        
+
     },
 
     create: function ()
@@ -51,9 +51,9 @@ var JoinMenu = new Phaser.Class({
 
                     http.onload=function(){
                       var result = JSON.parse(http.responseText);
-                      if(result.result=="ok"){//?šŒ?›ê°??… ?„±ê³?
+                      if(result.result=="ok"){
                         element.removeListener('click');
-                        console.log("?šŒ?›ê°??… ?„±ê³?");
+                        console.log("ok");
                         //  Tween the login form out
                         element.scene.tweens.add({ targets: element.rotate3d, x: 1, w: 90, duration: 3000, ease: 'Power3' });
 
@@ -65,8 +65,8 @@ var JoinMenu = new Phaser.Class({
                         });;
                         //  Populate the text with whatever they typed in as the username!
                         //text.setText('Welcome ' + inputUsername.value);
-                      }else{//?šŒ?›ê°??… ?‹¤?Œ¨
-                        console.log("?šŒ?›ê°??… ?‹¤?Œ¨");
+                      }else{
+                        console.log("no");
                       }
                     }
                 }else{
