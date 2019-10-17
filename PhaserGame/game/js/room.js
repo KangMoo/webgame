@@ -18,7 +18,6 @@ var RoomScene = new Phaser.Class({
         Phaser.Scene.call(this, { key: 'roomscene' });
     },
     init: function (settings) {
-        console.log(settings);
         this.roomnum = settings.roomnum;
         this.pnum = settings.pnum;
 	},
@@ -29,7 +28,6 @@ var RoomScene = new Phaser.Class({
     create: function ()
     {
 
-        this.roomnum;
         this.player = {};
         this.opponent = {};
         this.roomUi = {};
@@ -93,7 +91,7 @@ var RoomScene = new Phaser.Class({
             if(event.target.name == 'submit')
             {
                 var text = this.getChildByName('inputBox').value;
-                this.scene.socket.emit('chatting',text,this.scene.player.pnum);
+                this.scene.socket.emit('chatting',this.scene.roomnum,text,this.scene.player.pnum);
                 this.getChildByName('inputBox').value = "";
             }
             else if(event.target.name == 'ready')
@@ -108,10 +106,8 @@ var RoomScene = new Phaser.Class({
                     this.scene.player.state = STATE_WAITING;
                     this.scene.player = this.scene.PlayerStateUpdate(this.scene.player);
                 }
-                if(this.socket.firstSetting.roomScene == false)
-                {
-                    this.scene.socket.emit('ChgState',this.scene.player.state,this.scene.pnum);
-                }
+                this.scene.socket.emit('ChgState',this.scene.roomnum,this.scene.player.state,this.scene.pnum);
+                
                 
             }
         });
@@ -121,7 +117,7 @@ var RoomScene = new Phaser.Class({
             this.socket.firstSetting.roomScene = true;
 
             this.socket.on('broadcastInfo',()=>{
-                this.socket.emit('ChgState',this.player.state,this.pnum);
+                this.socket.emit('ChgState',this.roomnum,this.player.state,this.pnum);
             });
             
             this.socket.on('ChgState',(state,pnum)=>{
@@ -143,18 +139,17 @@ var RoomScene = new Phaser.Class({
                 
             });
             this.socket.on('refresh',()=>{
-                console.log('refresh');
                 for(var i =0;i<this.players.length;i++)
                 {
                     if(i+1==this.pnum) continue;
                     this.players[i].state = STATE_EMPTY;
                     this.PlayerStateUpdate(this.players[i]);
                 }
-                this.socket.emit('ChgState',this.player.state,this.pnum);
+                this.socket.emit('ChgState',this.roomnum,this.player.state,this.pnum);
             })
         }
         
-        //this.socket.emit('joinRoom',this.roomnum,this.pnum);
+        this.socket.emit('joinRoom',this.roomnum,this.pnum);
 
         this.btnquit = this.addButton(760, 40, 'sprites', this.doBack, this, 'btn_close_hl', 'btn_close', 'btn_close_hl', 'btn_close');
 

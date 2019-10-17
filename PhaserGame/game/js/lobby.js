@@ -27,6 +27,7 @@ var LobbyScene = new Phaser.Class({
         this.txts = [];
         
         this.socket = this.game.socket;
+        console.log(this.socket.clients);
         //socket ~
         
         if(this.socket.firstSetting.lobbyScene == false)
