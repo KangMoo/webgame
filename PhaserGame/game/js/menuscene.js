@@ -20,7 +20,10 @@ var MainMenu = new Phaser.Class({
     create: function ()
     {
 
-
+        var ID = function () {
+            return '_' + Math.random().toString(36).substr(2, 9);
+          };
+          console.log("ID:"+ID);
         var text = this.add.text(10, 10, 'Please login to play', { color: 'white', fontFamily: 'Arial', fontSize: '32px '});
 
         var element = this.add.dom(400, 600).createFromCache('nameform');

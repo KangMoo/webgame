@@ -16,8 +16,8 @@ var LobbyScene = new Phaser.Class({
         function LobbyScene() {
             Phaser.Scene.call(this, { key: 'lobbyscene' });
         },
-    init: function (id) {
-        this.userId = id;
+    init: function (ClientInfo) {
+        this.ClientInfo = ClientInfo;
     },
     preload: function () {
     },
@@ -26,9 +26,8 @@ var LobbyScene = new Phaser.Class({
 
         this.rooms = [];
         this.txts = [];
-
         
-        this.socket = io();
+        this.socket = this.ClientInfo.socket;
         //socket ~
         this.socket.on('aswrooms', (data) => {
             for (var i = 0; i < 5; i++) {
@@ -66,7 +65,7 @@ var LobbyScene = new Phaser.Class({
                 roomnum:roomNum,
                 pnum:pnum
             };
-            this.scene.start('roomscene',setting);
+            this.scene.start('roomscene',setting,this.ClientInfo);
             
         });
 
@@ -97,7 +96,7 @@ var LobbyScene = new Phaser.Class({
                                 delay: 10000
                             }
                         );
-                        this.scene.socket.emit('enterroom', roomnum,'tester');
+                        this.scene.socket.emit('enterroom', roomnum,this.scene.socket.id);
                     }
                     else if (this.state == ROOMFULL || this.state == ROOMPLAYING) {
                         var txt = this.scene.add.bitmapText(400, 600 - 100, 'fontwhite', 'Can not Enter Room!!');

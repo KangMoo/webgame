@@ -40,7 +40,7 @@ var Preloader = new Phaser.Class({
 		{
 			// calculate width based on value=0.0 .. 1.0
 			var w = Math.floor(this.preloadSprite.width * value);
-			console.log('onProgress: value=' + value + " w=" + w);
+			//console.log('onProgress: value=' + value + " w=" + w);
 
 			// sprite.frame.width cannot be zero
 			//w = (w <= 0 ? 1 : w);
@@ -55,7 +55,7 @@ var Preloader = new Phaser.Class({
 	},
 
 	onFileProgress: function (file) {
-		console.log('onFileProgress: file.key=' + file.key);
+		//console.log('onFileProgress: file.key=' + file.key);
 	},
 
 	preload: function ()

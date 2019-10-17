@@ -17,7 +17,8 @@ var RoomScene = new Phaser.Class({
     {
         Phaser.Scene.call(this, { key: 'roomscene' });
     },
-    init: function (settings) {
+    init: function (settings,ClientInfo) {
+        this.ClientInfo = ClientInfo;
         this.roomnum = settings.roomnum;
         this.pnum = settings.pnum;
 	},

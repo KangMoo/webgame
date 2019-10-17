@@ -19,6 +19,22 @@ var LoginMenu = new Phaser.Class({
 
     create: function ()
     {
+        //get Socket
+        this.socket = io();
+        
+
+        //get Random ID
+        var id;
+        this.socket.on('getID',(data)=>{
+            id = data;
+        })
+        this.socket.emit('getID');
+
+        //save Socket & ID
+        this.ClientInfo = {};
+        this.ClientInfo.id = id;
+        this.ClientInfo.socket = this.socket;
+
         var text = this.add.text(10, 10, 'Please login to play', { color: 'white', fontFamily: 'Arial', fontSize: '32px '});
 
         var element = this.add.dom(400, 600).createFromCache('nameform');
@@ -52,9 +68,9 @@ var LoginMenu = new Phaser.Class({
 
                     http.onload=function(){
                       var result = JSON.parse(http.responseText);
-                      if(result.result=="ok"){//ë¡œê·¸?¸ ?„±ê³?
+                      if(result.result=="ok"){//ë¡œê·¸?ï¿½ï¿½ ?ï¿½ï¿½ï¿½?
                         element.removeListener('click');
-                        console.log("ë¡œê·¸?¸ ?„±ê³?");
+                        console.log("ë¡œê·¸?ï¿½ï¿½ ?ï¿½ï¿½ï¿½?");
                         //console.log("User: ", result.user);
 
                         //  Tween the login form out
@@ -67,13 +83,13 @@ var LoginMenu = new Phaser.Class({
                                 // if(sessionStorage.getItem('login')){
                                 //   console.log(JSON.parse(sessionStorage.getItem('login')).id);
                                 // }
-                                //this.parent.scene.scene.start('gamescene');//ë©”ì¸ ë©”ë‰´ ë§Œë“¤?–´?•¼?• ?“¯
+                                //this.parent.scene.scene.start('gamescene');//ë©”ì¸ ë©”ë‰´ ë§Œë“¤?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½
                             }
                         });;
                         //  Populate the text with whatever they typed in as the username!
                         text.setText('Welcome ' + inputUsername.value);
-                      }else{//ë¡œê·¸?¸ ?‹¤?Œ¨
-                        console.log("ë¡œê·¸?¸ ?‹¤?Œ¨");
+                      }else{//ë¡œê·¸?ï¿½ï¿½ ?ï¿½ï¿½?ï¿½ï¿½
+                        console.log("ë¡œê·¸?ï¿½ï¿½ ?ï¿½ï¿½?ï¿½ï¿½");
                       }
                     }
                 }else{
@@ -98,7 +114,9 @@ var LoginMenu = new Phaser.Class({
     {
         console.log('menuscene doStart was called!');
         //this.scene.start('gamescene','test');
-        this.scene.start('lobbyscene');
+        
+        
+        this.scene.start('lobbyscene',this.ClientInfo);
     }
 
 });
