@@ -16,18 +16,17 @@ var LobbyScene = new Phaser.Class({
         function LobbyScene() {
             Phaser.Scene.call(this, { key: 'lobbyscene' });
         },
-    init: function (ClientInfo) {
-        this.ClientInfo = ClientInfo;
+    init: function () {
     },
     preload: function () {
     },
 
     create: function () {
-
+        ;
         this.rooms = [];
         this.txts = [];
         
-        this.socket = this.ClientInfo.socket;
+        this.socket = this.game.socket;
         //socket ~
         this.socket.on('aswrooms', (data) => {
             for (var i = 0; i < 5; i++) {
@@ -65,7 +64,7 @@ var LobbyScene = new Phaser.Class({
                 roomnum:roomNum,
                 pnum:pnum
             };
-            this.scene.start('roomscene',setting,this.ClientInfo);
+            this.scene.start('roomscene',setting);
             
         });
 

@@ -19,22 +19,9 @@ var LoginMenu = new Phaser.Class({
 
     create: function ()
     {
-        //get Socket
-        this.socket = io();
-        
-
-        //get Random ID
-        var id;
-        this.socket.on('getID',(data)=>{
-            id = data;
-        })
-        this.socket.emit('getID');
-
         //save Socket & ID
-        this.ClientInfo = {};
-        this.ClientInfo.id = id;
-        this.ClientInfo.socket = this.socket;
-
+        this.game.socket = io();
+        
         var text = this.add.text(10, 10, 'Please login to play', { color: 'white', fontFamily: 'Arial', fontSize: '32px '});
 
         var element = this.add.dom(400, 600).createFromCache('nameform');

@@ -17,8 +17,7 @@ var RoomScene = new Phaser.Class({
     {
         Phaser.Scene.call(this, { key: 'roomscene' });
     },
-    init: function (settings,ClientInfo) {
-        this.ClientInfo = ClientInfo;
+    init: function (settings) {
         this.roomnum = settings.roomnum;
         this.pnum = settings.pnum;
 	},
@@ -80,7 +79,7 @@ var RoomScene = new Phaser.Class({
             }
         }
         
-        this.socket = io();
+        this.socket = this.game.socket;
         
         
         
