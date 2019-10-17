@@ -63,7 +63,7 @@ var nps_lobby = io.on('connection', function (socket) {
     }
     else {
       updateRoomsInfo();
-      socket.emit('ChangeRoomScene', roomnum, rooms[roomnum].player.push(userid));
+      io.to(socket.id).emit('ChangeRoomScene', roomnum, rooms[roomnum].player.length+1);
     }
   });
 
@@ -90,6 +90,7 @@ var nps_lobby = io.on('connection', function (socket) {
   socket.on('chatting',(text,id)=>{
     io.emit('chatting',text,id);
   });
+  
   // ~roomScene
 
   socket.on('disconnect',()=>{

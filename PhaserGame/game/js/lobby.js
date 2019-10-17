@@ -28,24 +28,29 @@ var LobbyScene = new Phaser.Class({
         
         this.socket = this.game.socket;
         //socket ~
-        this.socket.on('aswrooms', (data) => {
-            for (var i = 0; i < 5; i++) {
-                this.rooms[i].state = data[i].roomstate;
-                if (this.rooms[i].state == ROOMEMPTY) {
-                    this.txts[i]._text = 'Empty';
-                }
-                else if (this.rooms[i].state == ROOMPLAYING) {
-                    this.txts[i]._text = 'Playing';
-                }
-                else if (this.rooms[i].state == ROOMWAITING) {
-                    this.txts[i]._text = 'Waiting';
-                }
-                else if (this.rooms[i].state == ROOMFULL) {
-                    this.txts[i]._text = 'Full';
-                }
-            }
-        });
+        
+        if(this.socket.firstSetting.lobbyScene == false)
+        {
+            this.socket.firstSetting.lobbyScene = true;
 
+            this.socket.on('aswrooms', (data) => {
+                for (var i = 0; i < 5; i++) {
+                    this.rooms[i].state = data[i].roomstate;
+                    if (this.rooms[i].state == ROOMEMPTY) {
+                        this.txts[i]._text = 'Empty';
+                    }
+                    else if (this.rooms[i].state == ROOMPLAYING) {
+                        this.txts[i]._text = 'Playing';
+                    }
+                    else if (this.rooms[i].state == ROOMWAITING) {
+                        this.txts[i]._text = 'Waiting';
+                    }
+                    else if (this.rooms[i].state == ROOMFULL) {
+                        this.txts[i]._text = 'Full';
+                    }
+                }
+            });
+        
         this.socket.on('serverMsg', (Msg) => {
             var txt = this.scene.add.bitmapText(400, 600 - 100, 'fontwhite', Msg);
             txt.setOrigin(0.5).setCenterAlign();
@@ -59,14 +64,16 @@ var LobbyScene = new Phaser.Class({
                 }
             );
         });
+
         this.socket.on('ChangeRoomScene', (roomNum,pnum) => {
             var setting = {
                 roomnum:roomNum,
                 pnum:pnum
             };
             this.scene.start('roomscene',setting);
-            
         });
+        }
+            
 
         // ~ socket
         for (var i = 0; i < 5; i++) {

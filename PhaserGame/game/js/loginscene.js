@@ -21,7 +21,12 @@ var LoginMenu = new Phaser.Class({
     {
         //save Socket & ID
         this.game.socket = io();
-        
+        this.game.socket.firstSetting = {
+            loginScene : true,
+            lobbyScene : false,
+            roomScene : false,
+            gameScene : false
+        }
         var text = this.add.text(10, 10, 'Please login to play', { color: 'white', fontFamily: 'Arial', fontSize: '32px '});
 
         var element = this.add.dom(400, 600).createFromCache('nameform');
@@ -103,7 +108,7 @@ var LoginMenu = new Phaser.Class({
         //this.scene.start('gamescene','test');
         
         
-        this.scene.start('lobbyscene',this.ClientInfo);
+        this.scene.start('lobbyscene',);
     }
 
 });
