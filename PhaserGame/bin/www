@@ -24,7 +24,7 @@ var server = http.createServer(app);
 var MakeID = function () {
   return '_' + Math.random().toString(36).substr(2, 9);
 };
-// socket ï¿½ï¿½ï¿½ ~
+// socket ï¿½ï¿½ï¿? ~
 const ROOMEMPTY = 1;
 const ROOMWAITING = 2;
 const ROOMFULL = 4;
@@ -81,15 +81,12 @@ var nps_lobby = io.on('connection', function (socket) {
 
   socket.on('joinRoom', (roomnum, pnum) => {
     socket.join(roomnum);
-    console.log('test');
-    console.log(io.sockets.adapter.rooms[roomnum]);
     io.emit('broadcastInfo');
   });
   socket.on('broadcastInfo',()=>{
   });
   
   socket.on('ChgState',(roomnum,state,pnum)=>{
-    console.log(roomnum);
     io.to(roomnum).emit('ChgState',state,pnum);
   })
 
@@ -100,6 +97,11 @@ var nps_lobby = io.on('connection', function (socket) {
 
   socket.on('chatting',(roomnum,text,id)=>{
     io.to(roomnum).emit('chatting',text,id);
+  });
+
+  socket.on('gameStart',(roomnum)=>{
+    io.to(roomnum).emit('gameStart');
+    rooms.roomstate=ROOMPLAYING;
   });
   
   // ~roomScene

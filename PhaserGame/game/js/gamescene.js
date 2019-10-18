@@ -26,6 +26,7 @@ var GameScene = new Phaser.Class({
 		},
 
 	init: function (settings) {
+		this.startPoint = settings;
 		console.log('settings:', settings)
 	},
 	preload: function () {
@@ -41,7 +42,8 @@ var GameScene = new Phaser.Class({
 		console.log(this.IS_TOUCH);
 
 		// add player sprite
-		this.player = this.physics.add.sprite(TILE_SIZE_X + TILE_SIZE_X / 2, TILE_SIZE_Y, 'sprite');
+		this.player = this.physics.add.sprite(this.startPoint.sx,this.startPoint.sy, 'sprite');
+		//this.player = this.physics.add.sprite(TILE_SIZE_X + TILE_SIZE_X / 2, TILE_SIZE_Y, 'sprite');
 		
 		this.player.setSize(30, 25).setOffset(15, 64);
 		this.player.Info = {
@@ -49,7 +51,7 @@ var GameScene = new Phaser.Class({
 			state: STATE_IDLE,
 			bombcount: 1,
 			bombpow: 1,
-			speed: 3,
+			speed: 2,
 			ability: 0,
 			x: 0, y: 0
 		};
