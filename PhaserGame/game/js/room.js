@@ -26,7 +26,7 @@ var RoomScene = new Phaser.Class({
     create: function () {
 
         this.player = {};
-        this.opponent = {};
+        
         this.roomUi = {};
         this.players = [];
 
@@ -72,10 +72,6 @@ var RoomScene = new Phaser.Class({
         }
 
         this.socket = this.game.socket;
-
-
-
-
         this.player = this.getCharacter(this.pnum);
 
         this.roomUi.chattingBox = this.add.dom(400, 450).createFromCache('chattingBox');
@@ -148,18 +144,20 @@ var RoomScene = new Phaser.Class({
                     position.x = 50 * 13 + 25;
                     position.y = 45 * 11;
                 }
-                var txt = this.add.bitmapText(400, 300, 'fontwhite', 'Let\'s Begin!!', 50);
+                var txt = this.add.bitmapText(400, 200, 'fontwhite', 'Let\'s Begin!!', 100);
                 txt.setOrigin(0.5).setCenterAlign();
+                console.log(txt);
                 var tw = this.tweens.add(
                     {
                         targets: txt,
-                        alpha: 0.0,
+                        scale:0.9,
                         ease: 'Power3',
-                        duration: 4000,
-                        delay: 500,
+                        duration: 200,
+                        repeat:4,
+                        yoyo:true,
                         onComplete: () => {
                             console.log(position);
-                            this.scene.start('gamescene', { sx: position.x, sy: position.y })
+                            this.scene.start('gamescene', {roomnum:this.roomnum, sx: position.x, sy: position.y })
                         }
                     }
                 );
@@ -170,9 +168,6 @@ var RoomScene = new Phaser.Class({
 
         this.btnquit = this.addButton(760, 40, 'sprites', this.doBack, this, 'btn_close_hl', 'btn_close', 'btn_close_hl', 'btn_close');
 
-        //test~
-        var txt = this.add.bitmapText(400, 300, 'fontwhite', 'RoomScene!');
-        txt.setOrigin(0.5).setCenterAlign();
         this.btnstart = this.addButton(800, 500, 'sprites', this.doStart, this, 'btn_play_hl', 'btn_play', 'btn_play_hl', 'btn_play');
     },
 

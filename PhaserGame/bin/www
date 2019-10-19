@@ -105,7 +105,14 @@ var nps_lobby = io.on('connection', function (socket) {
   });
   
   // ~roomScene
-
+  // gameScene ~
+  socket.on('setBomb',(roomnum,bombInfo)=>{
+    io.to(roomnum).emit('setBomb',bombInfo);
+  });
+  socket.on('playerUpdate',(roomnum,frame,x,y)=>{
+    io.to(roomnum).emit('playerUpdate',frame,x,y);
+  })
+  // ~ gameScene
   socket.on('disconnect',()=>{
     //io.emit('disconnect');
     io.emit('refresh');
