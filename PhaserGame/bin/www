@@ -109,8 +109,16 @@ var nps_lobby = io.on('connection', function (socket) {
   socket.on('setBomb',(roomnum,bombInfo)=>{
     io.to(roomnum).emit('setBomb',bombInfo);
   });
-  socket.on('playerUpdate',(roomnum,frame,x,y)=>{
-    io.to(roomnum).emit('playerUpdate',frame,x,y);
+  socket.on('playerUpdate',(roomnum,Info)=>{
+    socket.broadcast.to(roomnum).emit('playerUpdate',Info);
+    //io.to(roomnum).emit('playerUpdate',frame,x,y);
+  })
+  socket.on('playerDie',(roomnum)=>{
+    socket.broadcast.to(roomnum).emit('overText','You WIN!!');
+    io.to(roomnum).emit('gameEnd');
+  })
+  socket.on('playSound',(roomnum,sound)=>{
+    socket.broadcast.to(roomnum).emit('playSound',sound);
   })
   // ~ gameScene
   socket.on('disconnect',()=>{

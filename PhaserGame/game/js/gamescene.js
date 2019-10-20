@@ -27,7 +27,7 @@ var GameScene = new Phaser.Class({
 
 	init: function (settings) {
 		this.roomnum = settings.roomnum;
-		this.startPoint = settings;
+		this.settings = settings;
 		console.log('settings:', settings)
 	},
 	preload: function () {
@@ -43,7 +43,7 @@ var GameScene = new Phaser.Class({
 		console.log(this.IS_TOUCH);
 
 		// add player sprite
-		this.player = this.physics.add.sprite(this.startPoint.sx,this.startPoint.sy, 'sprite');
+		this.player = this.physics.add.sprite(this.settings.sx,this.settings.sy, 'sprite');
 		//this.player = this.physics.add.sprite(TILE_SIZE_X + TILE_SIZE_X / 2, TILE_SIZE_Y, 'sprite');
 		
 		this.player.setSize(30, 25).setOffset(15, 70);
@@ -69,12 +69,14 @@ var GameScene = new Phaser.Class({
 			ability: 0,
 			x: 0, y: 0
 		};
+		this.opponent.setCollideWorldBounds(true);
+		this.opponent.anims.play('player_down_r', true);
 		// add player sprite
 
-		var bgm = this.sound.add('bgm_gamescene');
-		bgm.loop = true;
-		bgm.volume = 0.5;
-		bgm.play();
+		this.bgm = this.sound.add('bgm_gamescene');
+		this.bgm.loop = true;
+		this.bgm.volume = 0.5;
+		this.bgm.play();
 		// add random coins and bombs
 		this.gameitems = this.physics.add.group();
 		this.flames = this.physics.add.group({ immovable: true });
@@ -144,18 +146,62 @@ var GameScene = new Phaser.Class({
 
 		if (this.socket.firstSetting.gameScene == false) {
 			this.socket.firstSetting.gameScene = true;
-			this.socket.on('setBomb',(bombInfo)=>{
+			this.socket.on('setBomb', (bombInfo) => {
 				var x = bombInfo.x;
 				var y = bombInfo.y;
 				var pow = bombInfo.pow;
-				this.setBomb(x,y,pow);
+				this.setBomb(x, y, pow);
 			})
-			//this.socket.on('playerUpdate',(frame,x,y)=>{
-			//	
-			//	this.opponent. = frame;
-			//	this.opponent.x = x;
-			//	this.opponent.y = y;
-			//})
+			this.socket.on('playerUpdate', (Info) => {
+				// opponenet update ~
+				this.opponent.Info = Info;
+				if (this.opponent.Info.state == STATE_WALK) {
+					if (this.opponent.Info.dir == DIR_UP) {
+						this.opponent.anims.play('player_up_walk_r', true);
+					}
+					else if (this.opponent.Info.dir == DIR_DOWN) {
+						this.opponent.anims.play('player_down_walk_r', true);
+					}
+					else if (this.opponent.Info.dir == DIR_LEFT) {
+						this.opponent.anims.play('player_left_walk_r', true);
+					}
+					else if (this.opponent.Info.dir == DIR_RIGHT) {
+						this.opponent.anims.play('player_right_walk_r', true);
+					}
+				}
+				else if(this.opponent.Info.state==STATE_IDLE)
+				{
+					if (this.opponent.Info.dir == DIR_UP) {
+						this.opponent.anims.play('player_up_r', true);
+					}
+					else if (this.opponent.Info.dir == DIR_DOWN) {
+						this.opponent.anims.play('player_down_r', true);
+					}
+					else if (this.opponent.Info.dir == DIR_LEFT) {
+						this.opponent.anims.play('player_left_r', true);
+					}
+					else if (this.opponent.Info.dir == DIR_RIGHT) {
+						this.opponent.anims.play('player_right_r', true);
+					}
+				}
+				else if(this.opponent.Info.state==STATE_DIE)
+				{
+					this.opponent.anims.play('die');
+				}
+				this.opponent.x = Info.x;
+				this.opponent.y = Info.y-28;
+				// ~ opponenet update
+			})
+			this.socket.on('overText',(text)=>{
+				this.overText(text);
+			});
+			this.socket.on('playSound',(sound)=>{
+				this.sound.play(sound);
+			});
+			this.socket.on('gameEnd',()=>{
+				this.time.delayedCall(3000, this.gameOver, [], this);
+				
+			})
 		}
 		// ~ secket connection
 		//test~
@@ -197,10 +243,10 @@ var GameScene = new Phaser.Class({
 		this.bombs.setDepth(2);
 		this.bombs_e.setDepth(2);
 		this.flames.setDepth(3);
+		this.opponent.setDepth(4);
 		this.player.setDepth(4);
 		
-		
-		//this.socket.emit('playerUpdate',this.roomnum,this.player.currentAnim.key,this.player.x,this.player.y);
+		this.socket.emit('playerUpdate',this.roomnum,this.player.Info);
 		this.playerInfoUpdate();
 	},
 
@@ -447,11 +493,14 @@ var GameScene = new Phaser.Class({
 		if (this.player.Info.state == STATE_DIE) return;
 		
 		this.player.Info.state = STATE_DIE;
+		this.socket.emit('playSound',this.roomnum,'die');
 		this.sound.play('die');
 		this.player.anims.play('die');
 		this.player.on('animationcomplete', (cuuurentAnim, currentFrmae, sprite) => {
-			this.gameOver();
+			this.overText('You Lose!!');
+			this.socket.emit('playerDie',this.roomnum);
 		});
+
 	},
 	ovlFlameBTile: function (flame, tile) {
 		if(this.TILES[parseInt(tile.x / TILE_SIZE_X)][parseInt(tile.y / TILE_SIZE_Y)] == 0)
@@ -530,17 +579,15 @@ var GameScene = new Phaser.Class({
 		bomb.destroy();
 		this.explode(x,y,pow);
 	},
-	gameOver: function () {
-		// add game over text
-		var txt = this.add.bitmapText(400, 300, 'fontwhite', 'Game over!');
+	overText:function(text)
+	{
+		var txt = this.add.bitmapText(400, 300, 'fontwhite', text);
 		txt.setOrigin(0.5).setCenterAlign();
 
-		// set gameover text as transparant, upside down and larger
 		txt.setAlpha(0.0);
 		txt.setAngle(180);
 		txt.setScale(4.0, 4.0);
 
-		// add twirl/zoom animation to gameover text
 		var tw = this.tweens.add(
 			{
 				targets: txt,
@@ -549,10 +596,16 @@ var GameScene = new Phaser.Class({
 				alpha: 1.0,
 				angle: 0,
 				ease: 'Power3',
-				duration: 1000, // duration of animation; higher=slower
-				delay: 500      // wait 500 ms before starting
+				duration: 1000,
+				delay: 500
+				
 			}
 		);
+	},
+	gameOver: function () {
+		console.log(this.bgm);
+		this.bgm.stop();
+		this.scene.start('roomscene',{roomnum:this.roomnum, pnum:this.settings.pnum});
 	},
 	setTileMap: function () {
 		this.TILES = [
