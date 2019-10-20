@@ -1,8 +1,4 @@
 
-var TYPE_SPEEDUP = 1;
-var TYPE_BOMBUP  = 2;
-var TYPE_POWERUP = 4;
-
 class CollectObj extends Phaser.Physics.Arcade.Sprite {
 
 	constructor(scene, x, y, texture, objtype) {

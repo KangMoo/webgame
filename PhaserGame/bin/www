@@ -30,12 +30,21 @@ const ROOMWAITING = 2;
 const ROOMFULL = 4;
 const ROOMPLAYING = 8;
 
+const TILE_GROUND = 1;
+const TILE_UBWALL = 2;
+const TILE_BWALL = 4;
+
+const TYPE_SPEEDUP = 16;
+const TYPE_BOMBUP  = 32;
+const TYPE_POWERUP = 64;
+
 
 var rooms = [];
 for (var i = 0; i < 5; i++) {
   rooms.push({
     player: [],
     roomstate: ROOMEMPTY,
+    tiles: []
   });
 }
 
@@ -100,11 +109,12 @@ var nps_lobby = io.on('connection', function (socket) {
   });
 
   socket.on('gameStart',(roomnum)=>{
+    rooms[roomnum].tiles = makeTile();
     io.to(roomnum).emit('gameStart');
     rooms.roomstate=ROOMPLAYING;
   });
-  
   // ~roomScene
+
   // gameScene ~
   socket.on('setBomb',(roomnum,bombInfo)=>{
     io.to(roomnum).emit('setBomb',bombInfo);
@@ -120,6 +130,9 @@ var nps_lobby = io.on('connection', function (socket) {
   socket.on('playSound',(roomnum,sound)=>{
     socket.broadcast.to(roomnum).emit('playSound',sound);
   })
+  socket.on('makeMap',(roomnum)=>{
+    io.to(roomnum).emit('makeMap',rooms[roomnum].tiles);
+  })
   // ~ gameScene
   socket.on('disconnect',()=>{
     //io.emit('disconnect');
@@ -127,7 +140,43 @@ var nps_lobby = io.on('connection', function (socket) {
   });
 });
 
-
+function makeTile() {
+  var TILES = [
+    [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
+    [2, 1, 1, 1, 4, 1, 4, 4, 4, 1, 1, 1, 2],
+    [2, 1, 2, 4, 2, 4, 2, 4, 2, 4, 2, 1, 2],
+    [2, 1, 4, 4, 4, 4, 4, 4, 1, 4, 4, 1, 2],
+    [2, 4, 2, 4, 2, 4, 2, 4, 2, 4, 2, 4, 2],
+    [2, 4, 4, 1, 4, 4, 4, 4, 1, 4, 4, 4, 2],
+    [2, 4, 2, 4, 2, 4, 2, 4, 2, 4, 2, 1, 2],
+    [2, 4, 4, 4, 1, 4, 1, 4, 4, 1, 4, 4, 2],
+    [2, 4, 2, 4, 2, 4, 2, 4, 2, 4, 2, 4, 2],
+    [2, 1, 4, 4, 1, 4, 4, 4, 1, 4, 4, 4, 2],
+    [2, 4, 2, 4, 2, 4, 2, 4, 2, 4, 2, 4, 2],
+    [2, 1, 4, 1, 4, 4, 4, 1, 4, 4, 4, 1, 2],
+    [2, 1, 2, 4, 2, 4, 2, 4, 2, 4, 2, 1, 2],
+    [2, 1, 1, 1, 4, 4, 1, 4, 4, 1, 1, 1, 2],
+    [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
+  ];
+  for (var i = 0; i < TILES.length; i++) {
+    for (var j = 0; j < TILES[i].length; j++) {
+      if (TILES[i][j] == 4) {
+        var rndnum = parseInt(Math.random() * 10);
+        
+        if (rndnum == 1) {
+          TILES[i][j] += TYPE_SPEEDUP;
+        }
+        else if (rndnum == 2) {
+          TILES[i][j] += TYPE_BOMBUP;
+        }
+        else if (rndnum == 3) {
+          TILES[i][j] += TYPE_POWERUP;
+        }
+      }
+    }
+  }
+  return TILES;
+}
 
 function updateRoomsInfo() {
 

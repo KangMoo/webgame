@@ -15,6 +15,15 @@ const STATE_DIE = 4;
 const TILE_SIZE_X = 50;
 const TILE_SIZE_Y = 45;
 
+const TILE_GROUND = 1;
+const TILE_UBWALL = 2;
+const TILE_BWALL = 4;
+
+
+const TYPE_SPEEDUP = 16;
+const TYPE_BOMBUP  = 32;
+const TYPE_POWERUP = 64;
+
 var GameScene = new Phaser.Class({
 
 	Extends: Phaser.Scene,
@@ -28,7 +37,6 @@ var GameScene = new Phaser.Class({
 	init: function (settings) {
 		this.roomnum = settings.roomnum;
 		this.settings = settings;
-		console.log('settings:', settings)
 	},
 	preload: function () {
 	},
@@ -39,8 +47,8 @@ var GameScene = new Phaser.Class({
 		this.fTiles = this.add.group();
 		this.cTiles = this.physics.add.group({ immovable: true });
 		this.bTiles = this.physics.add.group({ immovable: true });
-		this.setTileMap();
-		console.log(this.IS_TOUCH);
+		
+		//console.log(this.IS_TOUCH);
 
 		// add player sprite
 		this.player = this.physics.add.sprite(this.settings.sx,this.settings.sy, 'sprite');
@@ -123,8 +131,7 @@ var GameScene = new Phaser.Class({
 
 		*/
 
-		this.physics.add.overlap(this.player, this.gameitems, this.playerGetItem, null, this);
-
+		this.physics.add.overlap([this.player,this.opponent], this.gameitems, this.playerGetItem, null, this);
 		this.physics.add.overlap(this.bombs, [this.bombs,this.bombs_e], this.ovlBombs, null, this);
 		this.physics.add.overlap(this.bombs_e, [this.bombs,this.bombs_e], this.ovlBombs, null, this);
 		
@@ -200,13 +207,18 @@ var GameScene = new Phaser.Class({
 			});
 			this.socket.on('gameEnd',()=>{
 				this.time.delayedCall(3000, this.gameOver, [], this);
-				
+			})
+			this.socket.on('makeMap',(tiles)=>{
+				this.TILES = tiles;
+				this.setTileMap();
 			})
 		}
+		this.socket.emit('makeMap',this.roomnum);
+		//this.setTileMap();
 		// ~ secket connection
-		//test~
-		console.log(this.player);
-		//~test
+
+		console.log('bTiles');
+		console.log(this.bTiles);
 	},
 
 	update: function (time, delta) {
@@ -325,8 +337,8 @@ var GameScene = new Phaser.Class({
 			if (dir == DIR_UP) {
 				py -= i * TILE_SIZE_Y;
 				var chk = this.flametileChk(px, py);
-				if (chk == 3) break;
-				if (chk == 1) {
+				if ((chk &TILE_UBWALL)>0) break;
+				if ((chk &TILE_BWALL)>0) {
 					this.makeFlame(px + TILE_SIZE_X / 2, py + TILE_SIZE_Y / 2, 'flame_up');
 					break;
 				}
@@ -342,8 +354,8 @@ var GameScene = new Phaser.Class({
 			else if (dir === DIR_LEFT) {
 				px -= i * TILE_SIZE_X;
 				var chk = this.flametileChk(px, py);
-				if (chk == 3) break;
-				if (chk == 1) {
+				if ((chk &TILE_UBWALL)>0) break;
+				if ((chk &TILE_BWALL)>0) {
 					this.makeFlame(px + TILE_SIZE_X / 2, py + TILE_SIZE_Y / 2, 'flame_left');
 					break;
 				}
@@ -360,8 +372,8 @@ var GameScene = new Phaser.Class({
 			else if (dir == DIR_RIGHT) {
 				px += i * TILE_SIZE_X;
 				var chk = this.flametileChk(px, py);
-				if (chk == 3) break;
-				if (chk == 1) {
+				if ((chk &TILE_UBWALL)>0) break;
+				if ((chk &TILE_BWALL)>0) {
 					this.makeFlame(px + TILE_SIZE_X / 2, py + TILE_SIZE_Y / 2, 'flame_right');
 					break;
 				}
@@ -378,8 +390,8 @@ var GameScene = new Phaser.Class({
 			else if (dir == DIR_DOWN) {
 				py += i * TILE_SIZE_Y;
 				var chk = this.flametileChk(px, py);
-				if (chk == 3) break;
-				if (chk == 1) {
+				if ((chk &TILE_UBWALL)>0) break;
+				if ((chk &TILE_BWALL)>0) {
 					this.makeFlame(px + TILE_SIZE_X / 2, py + TILE_SIZE_Y / 2, 'flame_down');
 					break;
 				}
@@ -505,8 +517,7 @@ var GameScene = new Phaser.Class({
 	ovlFlameBTile: function (flame, tile) {
 		if(this.TILES[parseInt(tile.x / TILE_SIZE_X)][parseInt(tile.y / TILE_SIZE_Y)] == 0)
 			return;
-		
-		
+
 			this.tweens.add({
 				targets: tile,
 				duration: 450,
@@ -514,16 +525,27 @@ var GameScene = new Phaser.Class({
 
 				onComplete: () => { 
 					
-					if(this.TILES[parseInt(tile.x / TILE_SIZE_X)][parseInt(tile.y / TILE_SIZE_Y)] != 0)
-						{
-							//this.itemRndAdd(tile.x, tile.y);
-						}
-
-					this.TILES[parseInt(tile.x / TILE_SIZE_X)][parseInt(tile.y / TILE_SIZE_Y)] = 0;
+					var ovltile = this.TILES[parseInt(tile.x / TILE_SIZE_X)][parseInt(tile.y / TILE_SIZE_Y)];
+					console.log(ovltile);
+					if(ovltile >= TYPE_SPEEDUP)
+					{
+						this.itemAdd(tile.x,tile.y,(ovltile & (TYPE_SPEEDUP+TYPE_BOMBUP+TYPE_POWERUP)));
+					}
+					this.TILES[parseInt(tile.x / TILE_SIZE_X)][parseInt(tile.y / TILE_SIZE_Y)] = TILE_GROUND;
 					tile.destroy();
 					}
 			});
 		
+	},
+	itemAdd:function(x,y,item)
+	{
+		x = parseInt(x / TILE_SIZE_X) * TILE_SIZE_X + TILE_SIZE_X / 2;
+		y = parseInt(y / TILE_SIZE_Y) * TILE_SIZE_Y + TILE_SIZE_Y / 2;
+
+		var newobj = new CollectObj(this, x, y, 'sprite', item);
+
+		newobj.setSize(TILE_SIZE_X - 2, TILE_SIZE_Y - 2).setOffset(1, 1);
+		this.gameitems.add(newobj);
 	},
 	itemRndAdd: function (x, y) {
 
@@ -608,23 +630,6 @@ var GameScene = new Phaser.Class({
 		this.scene.start('roomscene',{roomnum:this.roomnum, pnum:this.settings.pnum});
 	},
 	setTileMap: function () {
-		this.TILES = [
-			[3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
-			[3, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 3],
-			[3, 0, 3, 1, 3, 1, 3, 1, 3, 1, 3, 0, 3],
-			[3, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 3],
-			[3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3],
-			[3, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 3],
-			[3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 0, 3],
-			[3, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 3],
-			[3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3],
-			[3, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 3],
-			[3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3],
-			[3, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 3],
-			[3, 0, 3, 1, 3, 1, 3, 1, 3, 1, 3, 0, 3],
-			[3, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 3],
-			[3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
-		];
 
 		for (var i = 0; i < 15; i++) {
 			for (var j = 0; j < 13; j++) {
@@ -632,24 +637,21 @@ var GameScene = new Phaser.Class({
 				this.temp = this.physics.add.image(i * TILE_SIZE_X + TILE_SIZE_X / 2, j * TILE_SIZE_Y + TILE_SIZE_Y / 2, 'sprite', 'tile_env2_floor').setOffset(0, 0);
 				this.temp.setSize(TILE_SIZE_X, TILE_SIZE_Y);
 				this.fTiles.add(this.temp);
-				if (this.TILES[i][j] == 0) {
+				if ((this.TILES[i][j] & TILE_GROUND)>0) {
 
 				}
-				else if (this.TILES[i][j] == 1) {
+				else if ((this.TILES[i][j] & TILE_BWALL)>0) {
 					this.temp = this.physics.add.image(i * TILE_SIZE_X + TILE_SIZE_X / 2, j * TILE_SIZE_Y + TILE_SIZE_Y / 2, 'sprite', 'tile_env2_block').setOffset(0, 0);
 					this.temp.setSize(TILE_SIZE_X, TILE_SIZE_Y, true);
 					this.bTiles.add(this.temp);
 				}
-				else if (this.TILES[i][j] == 3) {
+				else if ((this.TILES[i][j] & TILE_UBWALL)>0) {
 					this.temp = this.physics.add.image(i * TILE_SIZE_X + TILE_SIZE_X / 2, j * TILE_SIZE_Y + TILE_SIZE_Y / 2, 'sprite', 'tile_env2_wall').setOffset(0, 0);
 					this.temp.setSize(TILE_SIZE_X, TILE_SIZE_Y, true);
 					this.cTiles.add(this.temp);
 				}
 			}
 		}
-	},
-	enemyPlayerRender: function (enemyPlayerInfo) {
-
 	}
 
 
