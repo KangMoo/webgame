@@ -216,9 +216,6 @@ var GameScene = new Phaser.Class({
 		this.socket.emit('makeMap',this.roomnum);
 		//this.setTileMap();
 		// ~ secket connection
-
-		console.log('bTiles');
-		console.log(this.bTiles);
 	},
 
 	update: function (time, delta) {
@@ -526,7 +523,6 @@ var GameScene = new Phaser.Class({
 				onComplete: () => { 
 					
 					var ovltile = this.TILES[parseInt(tile.x / TILE_SIZE_X)][parseInt(tile.y / TILE_SIZE_Y)];
-					console.log(ovltile);
 					if(ovltile >= TYPE_SPEEDUP)
 					{
 						this.itemAdd(tile.x,tile.y,(ovltile & (TYPE_SPEEDUP+TYPE_BOMBUP+TYPE_POWERUP)));
@@ -625,7 +621,6 @@ var GameScene = new Phaser.Class({
 		);
 	},
 	gameOver: function () {
-		console.log(this.bgm);
 		this.bgm.stop();
 		this.scene.start('roomscene',{roomnum:this.roomnum, pnum:this.settings.pnum});
 	},
