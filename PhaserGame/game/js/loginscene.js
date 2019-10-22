@@ -72,10 +72,6 @@ var LoginMenu = new Phaser.Class({
                             onComplete: function (){
                                 element.setVisible(false);
                                 sessionStorage.setItem('login', JSON.stringify({id:inputUsername.value}));
-                                // if(sessionStorage.getItem('login')){
-                                //   console.log(JSON.parse(sessionStorage.getItem('login')).id);
-                                // }
-                                //this.parent.scene.scene.start('gamescene');//메인 메뉴 만들?��?��?��?��
                             }
                         });;
                         //  Populate the text with whatever they typed in as the username!
@@ -105,9 +101,7 @@ var LoginMenu = new Phaser.Class({
 	  doStart: function ()
     {
         console.log('menuscene doStart was called!');
-        //this.scene.start('gamescene','test');
-        
-        
+
         this.scene.start('lobbyscene',);
     }
 

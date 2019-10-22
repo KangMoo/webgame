@@ -22,35 +22,21 @@ var LobbyScene = new Phaser.Class({
     },
 
     create: function () {
-        ;
         this.rooms = [];
         this.txts = [];
-        
+        //this.roomGroup=this.add.group();
+
         this.socket = this.game.socket;
         //socket ~
-        
-        if(this.socket.firstSetting.lobbyScene == false)
-        {
+        if(this.socket.firstSetting.lobbyScene == false){
             this.socket.firstSetting.lobbyScene = true;
+        }
+        this.socket.on('aswrooms', (data) => {
+          console.log("socketON",data);
+          //console.log(this);
+          this.temp(data);
+        });
 
-            this.socket.on('aswrooms', (data) => {
-                for (var i = 0; i < 5; i++) {
-                    this.rooms[i].state = data[i].roomstate;
-                    if (this.rooms[i].state == ROOMEMPTY) {
-                        this.txts[i]._text = 'Empty';
-                    }
-                    else if (this.rooms[i].state == ROOMPLAYING) {
-                        this.txts[i]._text = 'Playing';
-                    }
-                    else if (this.rooms[i].state == ROOMWAITING) {
-                        this.txts[i]._text = 'Waiting';
-                    }
-                    else if (this.rooms[i].state == ROOMFULL) {
-                        this.txts[i]._text = 'Full';
-                    }
-                }
-            });
-        
         this.socket.on('serverMsg', (Msg) => {
             var txt = this.scene.add.bitmapText(400, 600 - 100, 'fontwhite', Msg);
             txt.setOrigin(0.5).setCenterAlign();
@@ -66,85 +52,17 @@ var LobbyScene = new Phaser.Class({
         });
 
         this.socket.on('ChangeRoomScene', (roomNum,pnum) => {
+          console.log("go to room")
             var setting = {
                 roomnum:roomNum,
                 pnum:pnum
             };
             this.scene.start('roomscene',setting);
         });
-        }
-            
-
-        // ~ socket
-        for (var i = 0; i < 5; i++) {
-            var room = this.add.image(this.game.config.width / 2, i * 90 + 50, 'uisprite', 'b_1').setInteractive();
-            room.state = ROOMEMPTY;
-            room.displayWidth = 400;
-            room.displayHeight = 80;
-            room.on('pointerdown', function (ptr) {
-                this.displayWidth = 385;
-                this.displayHeight = 65;
-            });
-            room.on('pointerup', function (ptr) {
-                
-                var roomnum = String(parseInt((ptr.y+25+80)/90-1));
-
-                if (this.displayWidth == 385) {
-                    if (this.state == ROOMEMPTY || this.state == ROOMWAITING) {
-                        var txt = this.scene.add.bitmapText(400, 600 - 100, 'fontwhite', 'Entering...');
-                        txt.setOrigin(0.5).setCenterAlign();
-                        var tw = this.scene.tweens.add(
-                            {
-                                targets: txt,
-                                alpha: 0.0,
-                                ease: 'Power3',
-                                duration: 1000,
-                                delay: 10000
-                            }
-                        );
-                        this.scene.socket.emit('enterroom', roomnum,this.scene.socket.id);
-                    }
-                    else if (this.state == ROOMFULL || this.state == ROOMPLAYING) {
-                        var txt = this.scene.add.bitmapText(400, 600 - 100, 'fontwhite', 'Can not Enter Room!!');
-                        txt.setOrigin(0.5).setCenterAlign();
-                        var tw = this.scene.tweens.add(
-                            {
-                                targets: txt,
-                                alpha: 0.0,
-                                ease: 'Power3',
-                                duration: 1000,
-                                delay: 500
-                            }
-                        );
-                    }
-
-                    this.displayWidth = 400;
-                    this.displayHeight = 80;
-                }
-            });
-            room.on('pointerout', function (ptr) {
-                if (this.displayWidth == 385) {
-                    this.displayWidth = 400;
-                    this.displayHeight = 80;
-                }
-            });
-            this.rooms.push(room);
-
-            var txt = this.add.bitmapText(this.rooms[i].x, this.rooms[i].y - 10, 'fontwhite', 'Empty');
-            txt.setOrigin(0.5).setCenterAlign();
-            this.txts.push(txt);
-        }
 
         this.btnquit = this.addButton(760, 40, 'sprites', this.doBack, this, 'btn_close_hl', 'btn_close', 'btn_close_hl', 'btn_close');
 
         this.socket.emit('rqrooms');
-
-        var timer = this.time.addEvent({
-            delay: 3000,
-            callback: function(){this.socket.emit('rqrooms')},
-            callbackScope:this,
-            loop: true
-        });
     },
     update: function () {
     },
@@ -152,6 +70,95 @@ var LobbyScene = new Phaser.Class({
         this.scene.start('loginmenu');
     },
     eneterRoom: function () {
+    },
+    temp:function(data){
+      if(this.rooms.length!=0){
+        for (var i = 0; i < 5; i++) {
+          //this.rooms[i].setVisible(false)
+          this.rooms[i].destroy();
+          this.txts[i].destroy();
+        }
+      }
+      this.rooms=[];
+      this.txts=[];
+      //this.roomGroup.clear(true);
+      //console.log("after",this.roomGroup);
+      for (var i = 0; i < data.length; i++) {
+          this.rooms[i] = this.add.image(this.game.config.width / 2, i * 90 + 50, 'uisprite', 'b_1').setInteractive();
+          this.rooms[i].state = data[i].roomstate;
+          this.rooms[i].displayWidth = 400;
+          this.rooms[i].displayHeight = 80;
+          this.rooms[i].on('pointerdown', function (ptr) {
+              this.displayWidth = 385;
+              this.displayHeight = 65;
+          });
+          this.rooms[i].on('pointerup', function (ptr) {
+
+              var roomnum = String(parseInt((ptr.y+25+80)/90-1));
+
+              if (this.displayWidth == 385) {
+                  if (this.state == ROOMEMPTY || this.state == ROOMWAITING) {
+                      var txt = this.scene.add.bitmapText(400, 600 - 100, 'fontwhite', 'Entering...');
+                      txt.setOrigin(0.5).setCenterAlign();
+                      var tw = this.scene.tweens.add(
+                          {
+                              targets: txt,
+                              alpha: 0.0,
+                              ease: 'Power3',
+                              duration: 1000,
+                              delay: 10000
+                          }
+                      );
+                      console.log("enter");
+                      this.scene.socket.emit('enterroom', roomnum,this.scene.socket.id);
+                  }
+                  else if (this.state == ROOMFULL || this.state == ROOMPLAYING) {
+                      var txt = this.scene.add.bitmapText(400, 600 - 100, 'fontwhite', 'Can not Enter Room!!');
+                      txt.setOrigin(0.5).setCenterAlign();
+                      var tw = this.scene.tweens.add(
+                          {
+                              targets: txt,
+                              alpha: 0.0,
+                              ease: 'Power3',
+                              duration: 1000,
+                              delay: 500
+                          }
+                      );
+                  }
+
+                  this.displayWidth = 400;
+                  this.displayHeight = 80;
+              }
+          });
+          this.rooms[i].on('pointerout', function (ptr) {
+              if (this.displayWidth == 385) {
+                  this.displayWidth = 400;
+                  this.displayHeight = 80;
+              }
+          });
+          //this.rooms.push(room);
+
+          //obj.rooms[i].state = data[i].roomstate;
+          var text="";
+          if (this.rooms[i].state == ROOMEMPTY) {
+              text = 'Empty';
+          }
+          else if (this.rooms[i].state == ROOMPLAYING) {
+              text = 'Playing';
+          }
+          else if (this.rooms[i].state == ROOMWAITING) {
+              text = 'Waiting';
+          }
+          else if (this.rooms[i].state == ROOMFULL) {
+              text = 'Full';
+          }
+          this.txts[i] = this.add.bitmapText(this.rooms[i].x, this.rooms[i].y - 10, 'fontwhite', text);
+          this.txts[i].setOrigin(0.5).setCenterAlign();
+          //this.txts.push(txt);
+
+          //this.roomGroup.add(room);
+          //this.roomGroup.add(txt);
+      }
     }
 
 });

@@ -24,7 +24,7 @@ var server = http.createServer(app);
 var MakeID = function () {
   return '_' + Math.random().toString(36).substr(2, 9);
 };
-// socket ����? ~
+// socket ï¿½ï¿½ï¿? ~
 const ROOMEMPTY = 1;
 const ROOMWAITING = 2;
 const ROOMFULL = 4;
@@ -71,8 +71,7 @@ var nps_lobby = io.on('connection', function (socket) {
     }
     else {
       updateRoomsInfo();
-      //io.sockets.broadcast.emit('aswrooms', rooms);
-      //socket.broadcast.emit('aswrooms', rooms);
+
       if(typeof io.sockets.adapter.rooms[roomnum] == 'undefined')
       {
         io.to(socket.id).emit('ChangeRoomScene', roomnum, 1);
@@ -91,8 +90,6 @@ var nps_lobby = io.on('connection', function (socket) {
 
   socket.on('joinRoom', (roomnum, pnum) => {
     socket.join(roomnum);
-    updateRoomsInfo();
-    socket.broadcast.emit('aswrooms', rooms);
     io.emit('broadcastInfo');
   });
   socket.on('broadcastInfo',()=>{
@@ -105,8 +102,6 @@ var nps_lobby = io.on('connection', function (socket) {
   socket.on('leaveRoom', (roomnum, pnum) => {
     io.to(roomnum).emit('refresh');
     socket.leave(roomnum);
-    updateRoomsInfo();
-    socket.broadcast.emit('aswrooms', rooms);
   });
 
   socket.on('chatting',(roomnum,text,id)=>{
