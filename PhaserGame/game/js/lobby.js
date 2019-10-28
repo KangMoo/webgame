@@ -60,7 +60,7 @@ var LobbyScene = new Phaser.Class({
             this.scene.start('roomscene',setting);
         });
 
-        this.btnquit = this.addButton(760, 40, 'sprites', this.doBack, this, 'btn_close_hl', 'btn_close', 'btn_close_hl', 'btn_close');
+        this.btnquit = this.addButton(770, 30, 'uisprite', this.doBack, this, 'button_x', 'button_x', 'button_x', 'button_x');
 
         this.socket.emit('rqrooms');
     },
@@ -84,7 +84,7 @@ var LobbyScene = new Phaser.Class({
       //this.roomGroup.clear(true);
       //console.log("after",this.roomGroup);
       for (var i = 0; i < data.length; i++) {
-          this.rooms[i] = this.add.image(this.game.config.width / 2, i * 90 + 50, 'uisprite', 'b_1').setInteractive();
+          this.rooms[i] = this.add.image(this.game.config.width / 2, i * 90 + 50, 'uisprite', 'button').setInteractive();
           this.rooms[i].state = data[i].roomstate;
           this.rooms[i].displayWidth = 400;
           this.rooms[i].displayHeight = 80;

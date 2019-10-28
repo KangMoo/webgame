@@ -74,7 +74,7 @@ var MainMenu = new Phaser.Class({
         });
 
 
-        this.btnstart = this.addButton(700, 500, 'sprites', this.doStart, this, 'btn_play_hl', 'btn_play', 'btn_play_hl', 'btn_play');
+        this.btnstart = this.addButton(700, 500, 'uisprite', this.doStart, this, 'button_play', 'button_play', 'button_play', 'button_play');
     },
 
 	doStart: function ()

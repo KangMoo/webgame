@@ -84,14 +84,16 @@ var JoinMenu = new Phaser.Class({
             ease: 'Power3'
         });
 
-
-        this.btnstart = this.addButton(700, 500, 'sprites', this.doStart, this, 'btn_play_hl', 'btn_play', 'btn_play_hl', 'btn_play');
+        this.btnTutorial = this.addButton(300,500,'uisprite',this.doTutorial,this,'button_tutorial','button_tutorial','button_tutorial','button_tutorial');
+        this.btnstart = this.addButton(700, 500, 'uisprite', this.doStart, this, 'button_play', 'button_play', 'button_play', 'button_play');
     },
 
 	  doStart: function (){
 
-        console.log('menuscene doStart was called!');
-        this.scene.start('loginscene','test');
+        this.scene.start('loginscene');
+    },
+    doTutorial:function(){
+        this.scene.start('tutorialscene');
     }
 
 });

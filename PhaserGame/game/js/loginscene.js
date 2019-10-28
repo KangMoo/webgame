@@ -19,6 +19,7 @@ var LoginMenu = new Phaser.Class({
 
     create: function ()
     {
+        
         //save Socket & ID
         this.game.socket = io();
         this.game.socket.firstSetting = {
@@ -27,6 +28,7 @@ var LoginMenu = new Phaser.Class({
             roomScene : false,
             gameScene : false
         }
+        /*
         var text = this.add.text(10, 10, 'Please login to play', { color: 'white', fontFamily: 'Arial', fontSize: '32px '});
 
         var element = this.add.dom(400, 600).createFromCache('nameform');
@@ -60,9 +62,9 @@ var LoginMenu = new Phaser.Class({
 
                     http.onload=function(){
                       var result = JSON.parse(http.responseText);
-                      if(result.result=="ok"){//로그?�� ?���?
+                      if(result.result=="ok"){//로그?�� ?���??
                         element.removeListener('click');
-                        console.log("로그?�� ?���?");
+                        console.log("로그?�� ?���??");
                         //console.log("User: ", result.user);
 
                         //  Tween the login form out
@@ -93,9 +95,32 @@ var LoginMenu = new Phaser.Class({
             duration: 3000,
             ease: 'Power3'
         });
+        */
+        this.mainImg = this.add.image(400,1000, 'sprite','gui_menu_background');
+        console.log(this.mainImg);
+        this.mainImg.setScale(1.5,1.5);
+        this.tweens.add({
+            targets: this.mainImg,
+            y: 300,
+            duration: 3000,
+            ease: 'Power3'
+        });
+        this.btnstart = this.addButton(1000, 300, 'uisprite', this.doStart, this, 'button_play', 'button_play', 'button_play', 'button_play');
+        this.btnTutorial = this.addButton(1000,400,'uisprite',this.doTutorial,this,'button_tutorial','button_tutorial','button_tutorial','button_tutorial');
+        
+        this.tweens.add({
+            targets: this.btnstart,
+            x:600,
+            duration: 5000,
+            ease: 'Power3'
+        });
 
-
-        this.btnstart = this.addButton(700, 500, 'sprites', this.doStart, this, 'btn_play_hl', 'btn_play', 'btn_play_hl', 'btn_play');
+        this.tweens.add({
+            targets: this.btnTutorial,
+            x:650,
+            duration: 5000,
+            ease: 'Power3'
+        });
     },
 
 	  doStart: function ()
@@ -103,6 +128,9 @@ var LoginMenu = new Phaser.Class({
         console.log('menuscene doStart was called!');
 
         this.scene.start('lobbyscene',);
+    },
+    doTutorial:function(){
+        this.scene.start('tutorscene');
     }
 
 });

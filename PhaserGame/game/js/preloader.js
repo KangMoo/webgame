@@ -84,10 +84,9 @@ var Preloader = new Phaser.Class({
 		this.load.atlas('sprite','src/sprites/spritesheet.png','src/sprites/sprites.json');
 		this.load.atlas('uisprite','src/sprites/uispritesheet.png','src/sprites/uispritesheet.json')
 		this.load.atlas('sprites', 'img/spritearray.png', 'img/spritearray.json');
-
+		
 		// font
 		this.load.bitmapFont('fontwhite', 'img/fontwhite.png', 'img/fontwhite.xml');
-
 		// sound effects
 		//this.load.audio('bg', [this.p('audio/bg.mp3'),this.p('audio/bg.ogg')]);
 		this.load.audio('coin', ['snd/coin.mp3', 'snd/coin.ogg']);

@@ -80,7 +80,6 @@ var GameScene = new Phaser.Class({
 		this.opponent.setCollideWorldBounds(true);
 		this.opponent.anims.play('player_down_r', true);
 		// add player sprite
-
 		this.bgm = this.sound.add('bgm_gamescene');
 		this.bgm.loop = true;
 		this.bgm.volume = 0.5;
@@ -93,45 +92,9 @@ var GameScene = new Phaser.Class({
 		this.bombs_e = this.physics.add.group({ immovable: true });
 		
 		this.physics.add.collider(this.player, [this.cTiles, this.bTiles, this.bombs, this.bombs_e],this.ovlPlayerTile,null,this);
-		// coin particles
-		var sparks = this.add.particles('sprites');
-		this.coinspark = sparks.createEmitter({
-			frame: ['sparkle1', 'sparkle2'],
-			quantity: 15,
-			scale: { start: 1.0, end: 0 },
-			on: false,
-			speed: 200,
-			lifespan: 500
-		});
-
-		/*
-		// bomb explosion particles (small)
-		var expl1 = this.add.particles('sprites');
-		this.bombexpl1 = expl1.createEmitter({
-			frame: ['bombexpl1'],
-			frequency: 100,
-			quantity: 10,
-			scale: { start: 1.0, end: 0 },
-			speed: { min: -1000, max: 1000 },
-			lifespan: 800,
-			on: false
-		});
-
-		// bomb explosion particles (big)
-		var expl2 = this.add.particles('sprites');
-		this.bombexpl2 = expl2.createEmitter({
-			frame: ['bombexpl2'],
-			quantity: 3,
-			scale: { start: 2.0, end: 0 },
-			frequency: 500,
-			on: false,
-			speed: { min: -200, max: 200 },
-			lifespan: 1000
-		});
-
-		*/
-
+		
 		this.physics.add.overlap([this.player,this.opponent], this.gameitems, this.playerGetItem, null, this);
+		
 		this.physics.add.overlap(this.bombs, [this.bombs,this.bombs_e], this.ovlBombs, null, this);
 		this.physics.add.overlap(this.bombs_e, [this.bombs,this.bombs_e], this.ovlBombs, null, this);
 		
@@ -146,7 +109,7 @@ var GameScene = new Phaser.Class({
 		this.spacebar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
 		// quit to menu button
-		this.btnquit = this.addButton(760, 40, 'sprites', this.doBack, this, 'btn_close_hl', 'btn_close', 'btn_close_hl', 'btn_close');
+		this.btnquit = this.addButton(770, 30, 'uisprite', this.doBack, this, 'button_x', 'button_x', 'button_x', 'button_x');
 
 		// secket connection ~
 		this.socket = this.game.socket;
@@ -160,7 +123,7 @@ var GameScene = new Phaser.Class({
 				this.setBomb(x, y, pow);
 			})
 			this.socket.on('playerUpdate', (Info) => {
-				// opponenet update ~
+				// opponent update ~
 				this.opponent.Info = Info;
 				if (this.opponent.Info.state == STATE_WALK) {
 					if (this.opponent.Info.dir == DIR_UP) {
@@ -193,11 +156,11 @@ var GameScene = new Phaser.Class({
 				}
 				else if(this.opponent.Info.state==STATE_DIE)
 				{
-					this.opponent.anims.play('die');
+					this.opponent.anims.play('die',true);
 				}
 				this.opponent.x = Info.x;
 				this.opponent.y = Info.y-28;
-				// ~ opponenet update
+				// ~ opponent update
 			})
 			this.socket.on('overText',(text)=>{
 				this.overText(text);
@@ -252,8 +215,16 @@ var GameScene = new Phaser.Class({
 		this.bombs.setDepth(2);
 		this.bombs_e.setDepth(2);
 		this.flames.setDepth(3);
-		this.opponent.setDepth(4);
-		this.player.setDepth(4);
+		if(this.opponent.Info.y > this.player.Info.y)
+		{
+			this.player.setDepth(4);
+			this.opponent.setDepth(5);
+		}
+		else
+		{
+			this.opponent.setDepth(4);
+			this.player.setDepth(5);
+		}
 		
 		this.socket.emit('playerUpdate',this.roomnum,this.player.Info);
 		this.playerInfoUpdate();
@@ -570,18 +541,17 @@ var GameScene = new Phaser.Class({
 	playerGetItem: function (player, item) {
 		this.sound.add('getItem').volume = 0.3;
 		this.sound.play('getItem');
-		
 		if (item.data.values.type == TYPE_BOMBUP) {
-			if (this.player.Info.bombcount < 8);
-			this.player.Info.bombcount++;
+			if (player.Info.bombcount < 8);
+			player.Info.bombcount++;
 		}
 		else if (item.data.values.type == TYPE_SPEEDUP) {
-			if (this.player.Info.speed < 8)
-				this.player.Info.speed++;
+			if (player.Info.speed < 8)
+			player.Info.speed++;
 		}
 		else if (item.data.values.type == TYPE_POWERUP) {
-			if (this.player.Info.bombpow < 5)
-				this.player.Info.bombpow++;
+			if (player.Info.bombpow < 5)
+			player.Info.bombpow++;
 		}
 		item.destroy();
 	},

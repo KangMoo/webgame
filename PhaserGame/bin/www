@@ -109,8 +109,8 @@ var nps_lobby = io.on('connection', function (socket) {
     socket.broadcast.emit('aswrooms', rooms);
   });
 
-  socket.on('chatting',(roomnum,text,id)=>{
-    io.to(roomnum).emit('chatting',text,id);
+  socket.on('chatting',(roomnum,text,pnum)=>{
+    io.to(roomnum).emit('chatting',text,socket.id,pnum);
   });
 
   socket.on('gameStart',(roomnum)=>{
@@ -140,7 +140,6 @@ var nps_lobby = io.on('connection', function (socket) {
   })
   // ~ gameScene
   socket.on('disconnect',()=>{
-    //io.emit('disconnect');
     io.emit('refresh');
   });
 });

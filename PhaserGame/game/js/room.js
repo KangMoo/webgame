@@ -31,23 +31,24 @@ var RoomScene = new Phaser.Class({
         this.players = [];
 
         // UI Init ~
-        this.roomUi.leftBox1 = this.add.image(150, 150, 'uisprite', 'b_1');
+        this.roomUi.leftBox1 = this.add.image(150, 150, 'uisprite', 'button');
         this.roomUi.leftBox1.displayWidth = 150;
         this.roomUi.leftBox1.displayHeight = 150;
 
-        this.roomUi.leftBox2 = this.add.image(150, 270, 'uisprite', 'b_1');
+        this.roomUi.leftBox2 = this.add.image(150, 270, 'uisprite', 'button');
         this.roomUi.leftBox2.displayWidth = 150;
         this.roomUi.leftBox2.displayHeight = 80;
-
+        
+        this.roomUi.miniMap = this.add.sprite(400,200, 'sprite','minimap');
         //roomUi.leftStateText = this.add.bitmapText(150, 265, 'fontwhite', 'Waiting',30);
         //roomUi.leftStateText.setOrigin(0.5).setCenterAlign();
 
 
-        this.roomUi.rightBox1 = this.add.image(this.game.config.width - 150, 150, 'uisprite', 'b_1');
+        this.roomUi.rightBox1 = this.add.image(this.game.config.width - 150, 150, 'uisprite', 'button');
         this.roomUi.rightBox1.displayWidth = 150;
         this.roomUi.rightBox1.displayHeight = 150;
 
-        this.roomUi.rightBox2 = this.add.image(this.game.config.width - 150, 270, 'uisprite', 'b_1');
+        this.roomUi.rightBox2 = this.add.image(this.game.config.width - 150, 270, 'uisprite', 'button');
         this.roomUi.rightBox2.displayWidth = 150;
         this.roomUi.rightBox2.displayHeight = 80;
 
@@ -75,7 +76,7 @@ var RoomScene = new Phaser.Class({
         this.player = this.getCharacter(this.pnum);
 
         this.roomUi.chattingBox = this.add.dom(400, 450).createFromCache('chattingBox');
-
+        
         this.roomUi.chattingBox.addListener('click');
         this.roomUi.chattingBox.on('click', function (event) {
             if (event.target.name == 'submit') {
@@ -93,11 +94,18 @@ var RoomScene = new Phaser.Class({
                     this.scene.player = this.scene.PlayerStateUpdate(this.scene.player);
                 }
                 this.scene.socket.emit('ChgState', this.scene.roomnum, this.scene.player.state, this.scene.pnum);
-
-
             }
         });
-
+        this.roomUi.chattingBox.addListener('keypress');
+        this.roomUi.chattingBox.on('keypress',function(event){
+            if(event.code == 'Enter')
+            {
+                var text = this.getChildByName('inputBox').value;
+                this.scene.socket.emit('chatting', this.scene.roomnum, text, this.scene.player.pnum);
+                this.getChildByName('inputBox').value = "";
+            }
+        })
+        
         if (this.socket.firstSetting.roomScene == false) {
             this.socket.firstSetting.roomScene = true;
 
@@ -117,8 +125,16 @@ var RoomScene = new Phaser.Class({
                     this.socket.emit('gameStart', this.roomnum);
                 };
             })
-            this.socket.on('chatting', (text, id) => {
-                this.roomUi.chattingBox.getChildByName('chatBox').value += '\n' + text;
+            this.socket.on('chatting', (text, id,pnum) => {
+                if(this.socket.id == id)
+                {
+                    this.roomUi.chattingBox.getChildByName('chatBox').value += '\n' + 'You : ' + text;
+                }
+                else
+                {
+                    this.roomUi.chattingBox.getChildByName('chatBox').value += '\n' + 'Opponent : ' + text;
+                }
+                //this.roomUi.chattingBox.getChildByName('chatBox').value += '\n' + text;
                 var cb = this.roomUi.chattingBox.getChildByName('chatBox');
                 cb.scrollTop = cb.scrollHeight;
             });
@@ -146,7 +162,6 @@ var RoomScene = new Phaser.Class({
                 }
                 var txt = this.add.bitmapText(400, 200, 'fontwhite', 'Let\'s Begin!!', 100);
                 txt.setOrigin(0.5).setCenterAlign();
-                console.log(txt);
                 var tw = this.tweens.add(
                     {
                         targets: txt,
@@ -156,7 +171,6 @@ var RoomScene = new Phaser.Class({
                         repeat:4,
                         yoyo:true,
                         onComplete: () => {
-                            console.log(position);
                             this.scene.start('gamescene', {roomnum:this.roomnum, sx: position.x, sy: position.y,pnum:this.pnum })
                         }
                     }
@@ -166,9 +180,9 @@ var RoomScene = new Phaser.Class({
 
         this.socket.emit('joinRoom', this.roomnum, this.pnum);
 
-        this.btnquit = this.addButton(760, 40, 'sprites', this.doBack, this, 'btn_close_hl', 'btn_close', 'btn_close_hl', 'btn_close');
+        this.btnquit = this.addButton(770, 30, 'uisprite', this.doBack, this, 'button_x', 'button_x', 'button_x', 'button_x');
 
-        this.btnstart = this.addButton(800, 500, 'sprites', this.doStart, this, 'btn_play_hl', 'btn_play', 'btn_play_hl', 'btn_play');
+        //this.btnstart = this.addButton(800, 500, 'uisprite', this.doStart, this, 'button_play', 'button_play', 'button_play', 'button_play');
     },
 
     doStart: function () {
