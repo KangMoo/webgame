@@ -32,8 +32,6 @@ var LobbyScene = new Phaser.Class({
             this.socket.firstSetting.lobbyScene = true;
         }
         this.socket.on('aswrooms', (data) => {
-          console.log("socketON",data);
-          //console.log(this);
           this.temp(data);
         });
 

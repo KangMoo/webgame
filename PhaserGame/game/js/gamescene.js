@@ -117,6 +117,7 @@ var GameScene = new Phaser.Class({
 		if (this.socket.firstSetting.gameScene == false) {
 			this.socket.firstSetting.gameScene = true;
 			this.socket.on('setBomb', (bombInfo) => {
+				console.log(bombInfo);
 				var x = bombInfo.x;
 				var y = bombInfo.y;
 				var pow = bombInfo.pow;
@@ -204,7 +205,7 @@ var GameScene = new Phaser.Class({
 				var bombInfo = {
 					x:this.player.Info.x,
 					y: this.player.Info.y,
-					pow: this.player.Info.pow
+					pow: this.player.Info.bombpow
 				}
 				this.socket.emit('setBomb',this.roomnum,bombInfo);
 				//this.setBomb(this.player.Info.x, this.player.Info.y, this.player.Info.pow);
@@ -413,7 +414,7 @@ var GameScene = new Phaser.Class({
 		y = parseInt(y / TILE_SIZE_Y) * TILE_SIZE_Y + TILE_SIZE_Y / 2;
 
 		var bomb = this.physics.add.sprite(x, y, 'sprite').setScale(1);
-		bomb.power = this.player.Info.bombpow;
+		bomb.power = pow;
 		bomb.name = this.time.now;
 		bomb.on('animationcomplete', (cuuurentAnim, currentFrmae, sprite) => {
 			this.explode(sprite.x, sprite.y, bomb.power);
