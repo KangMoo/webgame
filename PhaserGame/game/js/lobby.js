@@ -32,7 +32,7 @@ var LobbyScene = new Phaser.Class({
             this.socket.firstSetting.lobbyScene = true;
         }
         this.socket.on('aswrooms', (data) => {
-          this.temp(data);
+          this.roomupdate(data);
         });
 
         this.socket.on('serverMsg', (Msg) => {
@@ -65,11 +65,12 @@ var LobbyScene = new Phaser.Class({
     update: function () {
     },
     doBack: function () {
+        this.sound.play('btn');
         this.scene.start('loginmenu');
     },
     eneterRoom: function () {
     },
-    temp:function(data){
+    roomupdate:function(data){
       if(this.rooms.length!=0){
         for (var i = 0; i < 5; i++) {
           //this.rooms[i].setVisible(false)
@@ -91,7 +92,7 @@ var LobbyScene = new Phaser.Class({
               this.displayHeight = 65;
           });
           this.rooms[i].on('pointerup', function (ptr) {
-
+            this.scene.sound.play('btn');
               var roomnum = String(parseInt((ptr.y+25+80)/90-1));
 
               if (this.displayWidth == 385) {
@@ -107,7 +108,6 @@ var LobbyScene = new Phaser.Class({
                               delay: 10000
                           }
                       );
-                      console.log("enter");
                       this.scene.socket.emit('enterroom', roomnum,this.scene.socket.id);
                   }
                   else if (this.state == ROOMFULL || this.state == ROOMPLAYING) {

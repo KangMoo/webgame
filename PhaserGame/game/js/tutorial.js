@@ -26,6 +26,7 @@ var TutorScene = new Phaser.Class({
 
     doBack: function ()
     {
+        this.sound.play('btn');
 		this.scene.start('loginmenu');
     }
 

@@ -26,7 +26,6 @@ var RoomScene = new Phaser.Class({
     create: function () {
 
         this.player = {};
-        
         this.roomUi = {};
         this.players = [];
 
@@ -80,11 +79,13 @@ var RoomScene = new Phaser.Class({
         this.roomUi.chattingBox.addListener('click');
         this.roomUi.chattingBox.on('click', function (event) {
             if (event.target.name == 'submit') {
+                this.scene.sound.play('btn');
                 var text = this.getChildByName('inputBox').value;
                 this.scene.socket.emit('chatting', this.scene.roomnum, text, this.scene.player.pnum);
                 this.getChildByName('inputBox').value = "";
             }
             else if (event.target.name == 'ready') {
+                this.scene.sound.play('btn');
                 if (this.scene.player.state == STATE_WAITING) {
                     this.scene.player.state = STATE_READY;
                     this.scene.player = this.scene.PlayerStateUpdate(this.scene.player);
@@ -100,6 +101,7 @@ var RoomScene = new Phaser.Class({
         this.roomUi.chattingBox.on('keypress',function(event){
             if(event.code == 'Enter')
             {
+                this.scene.sound.play('btn');
                 var text = this.getChildByName('inputBox').value;
                 this.scene.socket.emit('chatting', this.scene.roomnum, text, this.scene.player.pnum);
                 this.getChildByName('inputBox').value = "";
@@ -182,12 +184,7 @@ var RoomScene = new Phaser.Class({
 
         this.btnquit = this.addButton(770, 30, 'uisprite', this.doBack, this, 'button_x', 'button_x', 'button_x', 'button_x');
 
-        //this.btnstart = this.addButton(800, 500, 'uisprite', this.doStart, this, 'button_play', 'button_play', 'button_play', 'button_play');
-    },
-
-    doStart: function () {
-        console.log('menuscene doStart was called!');
-        this.scene.start('gamescene');
+        
     },
 
     update: function () {
@@ -227,6 +224,7 @@ var RoomScene = new Phaser.Class({
         return false;
     },
     doBack: function () {
+        this.sound.play('btn');
         this.player.state = STATE_EMPTY;
         this.socket.emit('leaveRoom', this.roomnum, this.pnum);
         this.scene.start('lobbyscene');

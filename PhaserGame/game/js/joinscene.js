@@ -84,16 +84,13 @@ var JoinMenu = new Phaser.Class({
             ease: 'Power3'
         });
 
-        this.btnTutorial = this.addButton(300,500,'uisprite',this.doTutorial,this,'button_tutorial','button_tutorial','button_tutorial','button_tutorial');
+        
         this.btnstart = this.addButton(700, 500, 'uisprite', this.doStart, this, 'button_play', 'button_play', 'button_play', 'button_play');
     },
 
 	  doStart: function (){
 
         this.scene.start('loginscene');
-    },
-    doTutorial:function(){
-        this.scene.start('tutorialscene');
     }
 
 });

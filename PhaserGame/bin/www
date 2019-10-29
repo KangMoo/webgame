@@ -140,10 +140,21 @@ var nps_lobby = io.on('connection', function (socket) {
   })
   // ~ gameScene
   socket.on('disconnect',()=>{
+    //console.log("<socket>");
+    //console.log(socket);
+    //console.log("<socket.rooms>");
+    //console.log(socket.adapter.rooms);
+    if(isEmpty(socket.adapter.rooms) == false)
+    {
+      var roomnum = Object.entries(socket.adapter.rooms)[0][0];
+      io.to(roomnum).emit('disconnect',socket.id);
+    }
     io.emit('refresh');
   });
 });
-
+function isEmpty(obj) {
+  return Object.keys(obj).length === 0;
+}
 function makeTile() {
   var TILES = [
     [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
@@ -263,3 +274,5 @@ function onListening() {
     : 'port ' + addr.port;
   debug('Listening on ' + bind);
 }
+
+

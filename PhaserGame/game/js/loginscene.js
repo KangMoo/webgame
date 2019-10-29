@@ -19,7 +19,13 @@ var LoginMenu = new Phaser.Class({
 
     create: function ()
     {
-        
+        if(this.game.sound.sounds.length == 0)
+        {
+            this.bgm = this.sound.add('bgm_menuscene');
+            this.bgm.loop = true;
+            this.bgm.volume = 0.1;
+            this.bgm.play();
+        }
         //save Socket & ID
         this.game.socket = io();
         this.game.socket.firstSetting = {
@@ -97,7 +103,6 @@ var LoginMenu = new Phaser.Class({
         });
         */
         this.mainImg = this.add.image(400,1000, 'sprite','gui_menu_background');
-        console.log(this.mainImg);
         this.mainImg.setScale(1.5,1.5);
         this.tweens.add({
             targets: this.mainImg,
@@ -126,10 +131,11 @@ var LoginMenu = new Phaser.Class({
 	  doStart: function ()
     {
         console.log('menuscene doStart was called!');
-
+        this.sound.play('btn');
         this.scene.start('lobbyscene',);
     },
     doTutorial:function(){
+        this.sound.play('btn');
         this.scene.start('tutorscene');
     }
 

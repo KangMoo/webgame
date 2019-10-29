@@ -80,9 +80,11 @@ var GameScene = new Phaser.Class({
 		this.opponent.setCollideWorldBounds(true);
 		this.opponent.anims.play('player_down_r', true);
 		// add player sprite
-		this.bgm = this.sound.add('bgm_gamescene');
+		this.bgm = this.game.sound.sounds[0];
+		this.bgm.destroy();
+		this.bgm=this.sound.add('bgm_gamescene');
 		this.bgm.loop = true;
-		this.bgm.volume = 0.5;
+		this.bgm.volume = 0.1;
 		this.bgm.play();
 		// add random coins and bombs
 		this.gameitems = this.physics.add.group();
@@ -109,7 +111,7 @@ var GameScene = new Phaser.Class({
 		this.spacebar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
 		// quit to menu button
-		this.btnquit = this.addButton(770, 30, 'uisprite', this.doBack, this, 'button_x', 'button_x', 'button_x', 'button_x');
+		//this.btnquit = this.addButton(770, 30, 'uisprite', this.doBack, this, 'button_x', 'button_x', 'button_x', 'button_x');
 
 		// secket connection ~
 		this.socket = this.game.socket;
@@ -117,7 +119,6 @@ var GameScene = new Phaser.Class({
 		if (this.socket.firstSetting.gameScene == false) {
 			this.socket.firstSetting.gameScene = true;
 			this.socket.on('setBomb', (bombInfo) => {
-				console.log(bombInfo);
 				var x = bombInfo.x;
 				var y = bombInfo.y;
 				var pow = bombInfo.pow;
@@ -175,6 +176,18 @@ var GameScene = new Phaser.Class({
 			this.socket.on('makeMap',(tiles)=>{
 				this.TILES = tiles;
 				this.setTileMap();
+			})
+			this.socket.on('disconnect',(disconnectID)=>{
+				if(this.socket.id == disconnectID)
+				{
+					this.overText('You Disconnected!!');
+					this.scene.start('menuscene');
+				}
+				else
+				{
+					this.overText('Opponect Disconnected');
+					this.time.delayedCall(3000, this.gameOver, [], this);
+				}
 			})
 		}
 		this.socket.emit('makeMap',this.roomnum);
@@ -401,11 +414,9 @@ var GameScene = new Phaser.Class({
 		return this.TILES[parseInt(x / TILE_SIZE_X)][parseInt(y / TILE_SIZE_Y)]
 	},
 	doBack: function () {
-
+		this.sound.play('btn');
 		//this.explode(Phaser.Math.RND.between(0, 800), Phaser.Math.RND.between(0, 800), 1);//Phaser.Math.RND.between(1, 5));
 		this.playerDie();
-		console.log('gamescene doBack was called!');
-		//this.scene.start('mainmenu');
 	},
 	setBomb: function (x, y, pow) {
 		
@@ -540,7 +551,6 @@ var GameScene = new Phaser.Class({
 	},
 	
 	playerGetItem: function (player, item) {
-		this.sound.add('getItem').volume = 0.3;
 		this.sound.play('getItem');
 		if (item.data.values.type == TYPE_BOMBUP) {
 			if (player.Info.bombcount < 8);
@@ -592,7 +602,11 @@ var GameScene = new Phaser.Class({
 		);
 	},
 	gameOver: function () {
-		this.bgm.stop();
+		this.bgm.destroy();
+		this.bgm=this.sound.add('bgm_menuscene');
+		this.bgm.loop = true;
+		this.bgm.volume = 0.1;
+		this.bgm.play();
 		this.scene.start('roomscene',{roomnum:this.roomnum, pnum:this.settings.pnum});
 	},
 	setTileMap: function () {
