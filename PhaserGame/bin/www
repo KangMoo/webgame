@@ -67,7 +67,6 @@ var nps_lobby = io.on('connection', function (socket) {
   });
 
   socket.on('makerooms', () => {
-    rooms.push({room_id:room_id, player: [],roomstate: ROOMEMPTY,tiles: []});
     rooms.push({room_id:room_id, room_name: 'ROOM '+room_id, player: [], roomstate: ROOMEMPTY, tiles: []});
     //console.log(rooms);
     socket.emit('toroom',room_id);
