@@ -40,13 +40,14 @@ const TYPE_POWERUP = 64;
 
 
 var rooms = [];
-for (var i = 0; i < 5; i++) {
-  rooms.push({
-    player: [],
-    roomstate: ROOMEMPTY,
-    tiles: []
-  });
-}
+var room_id=0;
+// for (var i = 0; i < 5; i++) {
+//   rooms.push({
+//     player: [],
+//     roomstate: ROOMEMPTY,
+//     tiles: []
+//   });
+// }
 
 var io = require('socket.io')(server);
 
@@ -62,26 +63,41 @@ var nps_lobby = io.on('connection', function (socket) {
   socket.on('rqrooms', () => {
     updateRoomsInfo();
     socket.emit('aswrooms', rooms);
+    console.log(rooms);
+  });
+
+  socket.on('makerooms', () => {
+    rooms.push({room_id:room_id, player: [],roomstate: ROOMEMPTY,tiles: []});
+    //console.log(rooms);
+    socket.emit('toroom',room_id);
+    room_id+=1;
+    //socket.broadcast.emit('aswrooms', rooms);
   });
 
   socket.on('enterroom', (roomnum, userid) => {
-    if (rooms[roomnum].roomstate == ROOMFULL || rooms[roomnum].roomstate == ROOMPLAYING) {
-      socket.emit('aswrooms', rooms);
-      socket.emit('serverMsg', 'Can not enter room!!');
-    }
-    else {
-      updateRoomsInfo();
-      //io.sockets.broadcast.emit('aswrooms', rooms);
-      //socket.broadcast.emit('aswrooms', rooms);
-      if(typeof io.sockets.adapter.rooms[roomnum] == 'undefined')
-      {
-        io.to(socket.id).emit('ChangeRoomScene', roomnum, 1);
+    //console.log(rooms,roomnum);
+    //console.log(rooms[roomnum]);
+    //console.log(rooms[roomnum].roomstate);
+    var idx=rooms.findIndex(obj => obj.room_id==roomnum);
+    if(idx>=0){
+      if (rooms[idx].roomstate == ROOMFULL || rooms[idx].roomstate == ROOMPLAYING) {
+        socket.emit('aswrooms', rooms);
+        socket.emit('serverMsg', 'Can not enter room!!');
       }
-      else
-      {
-        io.to(socket.id).emit('ChangeRoomScene', roomnum, io.sockets.adapter.rooms[roomnum].length+1);
-      }
+      else {
+        updateRoomsInfo();
+        //io.sockets.broadcast.emit('aswrooms', rooms);
+        //socket.broadcast.emit('aswrooms', rooms);
+        if(typeof io.sockets.adapter.rooms[idx] == 'undefined')
+        {
+          io.to(socket.id).emit('ChangeRoomScene', roomnum, 1);
+        }
+        else
+        {
+          io.to(socket.id).emit('ChangeRoomScene', roomnum, io.sockets.adapter.rooms[idx].length+1);
+        }
 
+      }
     }
   });
 
@@ -105,7 +121,10 @@ var nps_lobby = io.on('connection', function (socket) {
   socket.on('leaveRoom', (roomnum, pnum) => {
     io.to(roomnum).emit('refresh');
     socket.leave(roomnum);
+    //var idx=rooms.findIndex(obj => obj.room_id==roomnum);
+    //rooms.splice(idx,1);
     updateRoomsInfo();
+
     socket.broadcast.emit('aswrooms', rooms);
   });
 
@@ -195,7 +214,7 @@ function makeTile() {
 
 function updateRoomsInfo() {
 
-  for (var i = 0; i < 5; i++) {
+  for (var i = 0; i < rooms.length; i++) {
     var clientNum =0;
     if (io.sockets.adapter.rooms[String(i)]) {
       clientNum = io.sockets.adapter.rooms[String(i)].length;
@@ -274,5 +293,3 @@ function onListening() {
     : 'port ' + addr.port;
   debug('Listening on ' + bind);
 }
-
-

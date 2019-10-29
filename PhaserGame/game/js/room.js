@@ -37,7 +37,7 @@ var RoomScene = new Phaser.Class({
         this.roomUi.leftBox2 = this.add.image(150, 270, 'uisprite', 'button');
         this.roomUi.leftBox2.displayWidth = 150;
         this.roomUi.leftBox2.displayHeight = 80;
-        
+
         this.roomUi.miniMap = this.add.sprite(400,200, 'sprite','minimap');
         //roomUi.leftStateText = this.add.bitmapText(150, 265, 'fontwhite', 'Waiting',30);
         //roomUi.leftStateText.setOrigin(0.5).setCenterAlign();
@@ -75,7 +75,7 @@ var RoomScene = new Phaser.Class({
         this.player = this.getCharacter(this.pnum);
 
         this.roomUi.chattingBox = this.add.dom(400, 450).createFromCache('chattingBox');
-        
+
         this.roomUi.chattingBox.addListener('click');
         this.roomUi.chattingBox.on('click', function (event) {
             if (event.target.name == 'submit') {
@@ -107,7 +107,7 @@ var RoomScene = new Phaser.Class({
                 this.getChildByName('inputBox').value = "";
             }
         })
-        
+
         if (this.socket.firstSetting.roomScene == false) {
             this.socket.firstSetting.roomScene = true;
 
@@ -184,7 +184,7 @@ var RoomScene = new Phaser.Class({
 
         this.btnquit = this.addButton(770, 30, 'uisprite', this.doBack, this, 'button_x', 'button_x', 'button_x', 'button_x');
 
-        
+
     },
 
     update: function () {
