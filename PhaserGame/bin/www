@@ -68,6 +68,7 @@ var nps_lobby = io.on('connection', function (socket) {
 
   socket.on('makerooms', () => {
     rooms.push({room_id:room_id, player: [],roomstate: ROOMEMPTY,tiles: []});
+    rooms.push({room_id:room_id, room_name: 'ROOM '+room_id, player: [], roomstate: ROOMEMPTY, tiles: []});
     //console.log(rooms);
     socket.emit('toroom',room_id);
     room_id+=1;
@@ -90,11 +91,11 @@ var nps_lobby = io.on('connection', function (socket) {
         //socket.broadcast.emit('aswrooms', rooms);
         if(typeof io.sockets.adapter.rooms[idx] == 'undefined')
         {
-          io.to(socket.id).emit('ChangeRoomScene', roomnum, 1);
+          io.to(socket.id).emit('ChangeRoomScene', roomnum, rooms[idx].room_name, 1);
         }
         else
         {
-          io.to(socket.id).emit('ChangeRoomScene', roomnum, io.sockets.adapter.rooms[idx].length+1);
+          io.to(socket.id).emit('ChangeRoomScene', roomnum, rooms[idx].room_name, io.sockets.adapter.rooms[idx].length+1);
         }
 
       }
@@ -117,6 +118,11 @@ var nps_lobby = io.on('connection', function (socket) {
   socket.on('ChgState',(roomnum,state,pnum)=>{
     io.to(roomnum).emit('ChgState',state,pnum);
   })
+
+  socket.on('chgRoomName',(roomnum,name,pnum)=>{
+    rooms[roomnum].room_name = name;
+    io.to(roomnum).emit('chgRoomName',name,socket.id,pnum);
+  });
 
   socket.on('leaveRoom', (roomnum, pnum) => {
     io.to(roomnum).emit('refresh');

@@ -62,6 +62,7 @@ var Preloader = new Phaser.Class({
 	{
 		this.load.html('joinform', 'html/join.html');
 		this.load.html('nameform', 'html/login.html');
+		this.load.html('roomName', 'html/roomName.html');
 		this.load.html('chattingBox', 'html/chattingBox.html');
 		this.load.html('createroomform', 'html/createroom.html');
 
@@ -84,7 +85,7 @@ var Preloader = new Phaser.Class({
 		this.load.atlas('sprite','src/sprites/spritesheet.png','src/sprites/sprites.json');
 		this.load.atlas('uisprite','src/sprites/uispritesheet.png','src/sprites/uispritesheet.json')
 		this.load.atlas('sprites', 'img/spritearray.png', 'img/spritearray.json');
-		
+
 		// font
 		this.load.bitmapFont('fontwhite', 'img/fontwhite.png', 'img/fontwhite.xml');
 		// sound effects

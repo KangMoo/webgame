@@ -18,6 +18,7 @@ var RoomScene = new Phaser.Class({
         },
     init: function (settings) {
         this.roomnum = settings.roomnum;
+        this.roomname = settings.roomname;
         this.pnum = settings.pnum;
     },
     preload: function () {
@@ -74,8 +75,18 @@ var RoomScene = new Phaser.Class({
         this.socket = this.game.socket;
         this.player = this.getCharacter(this.pnum);
 
-        this.roomUi.chattingBox = this.add.dom(400, 450).createFromCache('chattingBox');
+        this.roomUi.roomName = this.add.dom(200, 30).createFromCache('roomName');
+        this.roomUi.roomName.getChildByName('roominputBox').value = this.roomname;
+        this.roomUi.roomName.addListener('click');
+        this.roomUi.roomName.on('click', function (event) {
+          if (event.target.name == 'roomsubmit') {
+              var text = this.getChildByName('roominputBox').value;
+              this.scene.socket.emit('chgRoomName', this.scene.roomnum, text, this.scene.player.pnum);
+              console.log(text);
+          }
+        });
 
+        this.roomUi.chattingBox = this.add.dom(400, 450).createFromCache('chattingBox');
         this.roomUi.chattingBox.addListener('click');
         this.roomUi.chattingBox.on('click', function (event) {
             if (event.target.name == 'submit') {
@@ -106,7 +117,7 @@ var RoomScene = new Phaser.Class({
                 this.scene.socket.emit('chatting', this.scene.roomnum, text, this.scene.player.pnum);
                 this.getChildByName('inputBox').value = "";
             }
-        })
+        });
 
         if (this.socket.firstSetting.roomScene == false) {
             this.socket.firstSetting.roomScene = true;
@@ -127,7 +138,11 @@ var RoomScene = new Phaser.Class({
                     this.socket.emit('gameStart', this.roomnum);
                 };
             })
-            this.socket.on('chatting', (text, id,pnum) => {
+            this.socket.on('chgRoomName', (text, id, pnum) => {
+                this.room_name = text;
+                this.roomUi.roomName.getChildByName('roominputBox').value = text;
+            });
+            this.socket.on('chatting', (text, id, pnum) => {
                 if(this.socket.id == id)
                 {
                     this.roomUi.chattingBox.getChildByName('chatBox').value += '\n' + 'You : ' + text;

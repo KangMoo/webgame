@@ -66,7 +66,7 @@ var LobbyScene = new Phaser.Class({
         });
 
         this.socket.on('toroom', (data) => {
-          this.socket.emit('enterroom', data,this.socket.id);
+          this.socket.emit('enterroom', data, this.socket.id);
           //this.roomupdate(data);
         });
 
@@ -84,10 +84,11 @@ var LobbyScene = new Phaser.Class({
             );
         });
 
-        this.socket.on('ChangeRoomScene', (roomNum,pnum) => {
+        this.socket.on('ChangeRoomScene', (roomNum,roomName,pnum) => {
           console.log("go to room")
             var setting = {
                 roomnum:roomNum,
+                roomname:roomName,
                 pnum:pnum
             };
             this.scene.start('roomscene',setting);
@@ -121,6 +122,7 @@ var LobbyScene = new Phaser.Class({
           console.log(idx,data.length);
           this.rooms[i] = this.add.image(this.game.config.width / 2, i * 90 + 50, 'uisprite', 'button').setInteractive();
           this.rooms[i].id=idx;
+          this.rooms[i].name = data[idx].room_name;
           this.rooms[i].state = data[idx].roomstate;
           this.rooms[i].displayWidth = 400;
           this.rooms[i].displayHeight = 80;
