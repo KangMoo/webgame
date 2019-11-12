@@ -189,9 +189,13 @@ var LobbyScene = new Phaser.Class({
           else if (this.rooms[i].state == ROOMFULL) {
               text = 'Full';
           }
-          this.txts[i] = this.add.bitmapText(this.rooms[i].x, this.rooms[i].y - 10, 'fontwhite', text);
+          //text = this.rooms[i].name + '\n' + text;
+          this.txts[i] = this.add.bitmapText(this.rooms[i].x + 150, this.rooms[i].y + 15, 'fontwhite', text, 20);
           this.txts[i].setOrigin(0.5).setCenterAlign();
           //this.txts.push(txt);
+          var tmp_room_name = this.add.bitmapText(this.rooms[i].x - 180, this.rooms[i].y - 30, 'fontwhite', this.rooms[i].name, 30);
+          //tmp_room_name.setOrigin(0.5).setCenterAlign();
+          //this.rooms[i].name.setOrigin(0.5).setCenterAlign();
 
           //this.roomGroup.add(room);
           //this.roomGroup.add(txt);

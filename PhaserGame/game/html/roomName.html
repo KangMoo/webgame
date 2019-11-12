@@ -1,10 +1,11 @@
 <style>
+    #name_area {
+        margin: 0 0 0 60px;
+    }
     #roominputbox {
         font-size: 14px;
         height: 30px;
         width: 200px;
-        padding: 12px 12px;
-        margin: 8px 0;
         display: inline-block;
         border: 1px solid #ccc;
         border-radius: 4px;
@@ -15,10 +16,9 @@
         font-size: 14px;
         height: 30px;
         width: 100px;
+        padding: 0px;
         background-color: #4CAF50;
         color: white;
-        padding: 12px 12px;
-        margin: 8px 0;
         border: none;
         border-radius: 4px;
         cursor: pointer;
@@ -28,5 +28,7 @@
     }
 
 </style>
+<div id="name_area">
 <input type="text" id='roominputbox' name="roominputBox" maxlength="60" size="60">
-<input type="submit" value="Submit" id="roomSubmit" name="roomsubmit">
+<input type="submit" value="edit" id="roomSubmit" name="roomsubmit">
+</div>

@@ -120,6 +120,7 @@ var nps_lobby = io.on('connection', function (socket) {
 
   socket.on('chgRoomName',(roomnum,name,pnum)=>{
     rooms[roomnum].room_name = name;
+    socket.broadcast.emit('aswrooms', rooms);
     io.to(roomnum).emit('chgRoomName',name,socket.id,pnum);
   });
 
