@@ -147,7 +147,7 @@ var LobbyScene = new Phaser.Class({
                               delay: 10000
                           }
                       );
-                      this.scene.socket.emit('enterroom', roomnum,this.scene.socket.id);
+                      this.scene.socket.emit('enterroom', roomnum, this.scene.socket.id);
                   }
                   else if (this.state == ROOMFULL || this.state == ROOMPLAYING) {
                       var txt = this.scene.add.bitmapText(400, 600 - 100, 'fontwhite', 'Can not Enter Room!!');

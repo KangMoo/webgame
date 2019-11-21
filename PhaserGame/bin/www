@@ -28,7 +28,7 @@ var MakeID = function () {
 const NOT_ENTER = 0;
 const ENTER = 1;
 
-const NO_ROOM = 0;
+const NO_ROOM = -1;
 
 const ROOMEMPTY = 1;
 const ROOMWAITING = 2;
@@ -65,13 +65,29 @@ var nps_lobby = io.on('connection', function (socket) {
 
   })
 
-  socket.on('saveSocket',()=>{
+  socket.on('saveSocket', ()=>{
     // info: room_num == 0, not enter / else, enter room
     sockets.set(socket.id, {socket_id:socket.id, socket_name:'SOCKET '+socket_num, room_num:NO_ROOM, enter_state:NOT_ENTER});
     socket_num+=1;
     console.log(sockets);
     // console.log(sockets.get(socket.id).socket_name);
   })
+/*
+  socket.on('updateSocket', (room_num)=>{
+    console.log("updateSocket!!!!!");
+    // info: room_num == 0, not enter / else, enter room
+    if (room_num == -1) { // leave room
+      sockets.get(socket.id).room_num = NO_ROOM;
+      sockets.get(socket.id).enter_state = NOT_ENTER;
+      // sockets.set(socket.id, {socket_id:socket.id, socket_name:'SOCKET '+socket_num, room_num:NO_ROOM, enter_state:NOT_ENTER});
+    } else if (room_num >= 0) {
+      sockets.get(socket.id).room_num = room_num;
+      sockets.get(socket.id).enter_state = ENTER;
+      // sockets.set(socket.id, {socket_id:socket.id, socket_name:'SOCKET '+socket_num, room_num:room_num, enter_state:ENTER});
+    }
+    console.log(sockets);
+  })
+*/
   //~loginScene
 
   // lobbyScene ~
@@ -112,6 +128,7 @@ var nps_lobby = io.on('connection', function (socket) {
           io.to(socket.id).emit('ChangeRoomScene', roomnum, rooms[idx].room_name, io.sockets.adapter.rooms[idx].length+1);
         }
 
+        console.log("enterroom!!!!!");
       }
     }
   });
@@ -122,10 +139,14 @@ var nps_lobby = io.on('connection', function (socket) {
 
   socket.on('joinRoom', (roomnum, pnum) => {
     socket.join(roomnum);
+    updateSocket(roomnum, socket.id);
     updateRoomsInfo();
     socket.broadcast.emit('aswrooms', rooms);
     io.emit('broadcastInfo');
+
+    console.log("joinroom!!!!!");
   });
+
   socket.on('broadcastInfo',()=>{
   });
 
@@ -139,11 +160,12 @@ var nps_lobby = io.on('connection', function (socket) {
     io.to(roomnum).emit('chgRoomName',name,socket.id,pnum);
   });
 
-  socket.on('leaveRoom', (roomnum, pnum) => {
+  socket.on('leaveRoom', (roomnum,pnum) => {
     io.to(roomnum).emit('refresh');
     socket.leave(roomnum);
     //var idx=rooms.findIndex(obj => obj.room_id==roomnum);
     //rooms.splice(idx,1);
+    updateSocket(-1, socket.id);
     updateRoomsInfo();
 
     socket.broadcast.emit('aswrooms', rooms);
@@ -247,6 +269,20 @@ function updateRoomsInfo() {
   }
 }
 
+function updateSocket(room_num, name) {
+  console.log("updateSocket!!!!!");
+  // info: room_num == 0, not enter / else, enter room
+  if (room_num == -1) { // leave room
+    sockets.get(name).room_num = NO_ROOM;
+    sockets.get(name).enter_state = NOT_ENTER;
+    // sockets.set(socket.id, {socket_id:socket.id, socket_name:'SOCKET '+socket_num, room_num:NO_ROOM, enter_state:NOT_ENTER});
+  } else if (room_num >= 0) {
+    sockets.get(name).room_num = room_num;
+    sockets.get(name).enter_state = ENTER;
+    // sockets.set(socket.id, {socket_id:socket.id, socket_name:'SOCKET '+socket_num, room_num:room_num, enter_state:ENTER});
+  }
+  console.log(sockets);
+}
 
 /**
  * Listen on provided port, on all network interfaces.
