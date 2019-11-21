@@ -34,6 +34,8 @@ var LoginMenu = new Phaser.Class({
             roomScene : false,
             gameScene : false
         }
+        this.game.socket.emit('saveSocket', this.game.socket.id);
+
         /*
         var text = this.add.text(10, 10, 'Please login to play', { color: 'white', fontFamily: 'Arial', fontSize: '32px '});
 
@@ -68,9 +70,9 @@ var LoginMenu = new Phaser.Class({
 
                     http.onload=function(){
                       var result = JSON.parse(http.responseText);
-                      if(result.result=="ok"){//로그?�� ?���??
+                      if(result.result=="ok"){//로그?�� ?����??
                         element.removeListener('click');
-                        console.log("로그?�� ?���??");
+                        console.log("로그?�� ?����??");
                         //console.log("User: ", result.user);
 
                         //  Tween the login form out
@@ -112,7 +114,7 @@ var LoginMenu = new Phaser.Class({
         });
         this.btnstart = this.addButton(1000, 300, 'uisprite', this.doStart, this, 'button_play', 'button_play', 'button_play', 'button_play');
         this.btnTutorial = this.addButton(1000,400,'uisprite',this.doTutorial,this,'button_tutorial','button_tutorial','button_tutorial','button_tutorial');
-        
+
         this.tweens.add({
             targets: this.btnstart,
             x:600,

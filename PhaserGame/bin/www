@@ -25,6 +25,11 @@ var MakeID = function () {
   return '_' + Math.random().toString(36).substr(2, 9);
 };
 // socket ����? ~
+const NOT_ENTER = 0;
+const ENTER = 1;
+
+const NO_ROOM = 0;
+
 const ROOMEMPTY = 1;
 const ROOMWAITING = 2;
 const ROOMFULL = 4;
@@ -38,9 +43,11 @@ const TYPE_SPEEDUP = 16;
 const TYPE_BOMBUP  = 32;
 const TYPE_POWERUP = 64;
 
+var sockets = new Map();
+var socket_num = 1;
 
 var rooms = [];
-var room_id=0;
+var room_id = 0;
 // for (var i = 0; i < 5; i++) {
 //   rooms.push({
 //     player: [],
@@ -55,9 +62,17 @@ var nps_lobby = io.on('connection', function (socket) {
   //loginScene~
   socket.on('getID',()=>{
     socket.emit('getID',socket.id);
+
+  })
+
+  socket.on('saveSocket',()=>{
+    // info: room_num == 0, not enter / else, enter room
+    sockets.set(socket.id, {socket_id:socket.id, socket_name:'SOCKET '+socket_num, room_num:NO_ROOM, enter_state:NOT_ENTER});
+    socket_num+=1;
+    console.log(sockets);
+    // console.log(sockets.get(socket.id).socket_name);
   })
   //~loginScene
-
 
   // lobbyScene ~
   socket.on('rqrooms', () => {
@@ -173,6 +188,7 @@ var nps_lobby = io.on('connection', function (socket) {
     {
       var roomnum = Object.entries(socket.adapter.rooms)[0][0];
       io.to(roomnum).emit('disconnect',socket.id);
+      sockets.delete(socket.id);
     }
     io.emit('refresh');
   });
