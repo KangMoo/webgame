@@ -188,7 +188,7 @@ var RoomScene = new Phaser.Class({
                         repeat:4,
                         yoyo:true,
                         onComplete: () => {
-                            this.scene.start('gamescene', {roomnum:this.roomnum, sx: position.x, sy: position.y,pnum:this.pnum })
+                            this.scene.start('gamescene', {roomnum:this.roomnum, roomname:this.roomname, sx: position.x, sy: position.y,pnum:this.pnum })
                         }
                     }
                 );

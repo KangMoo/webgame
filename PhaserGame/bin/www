@@ -72,22 +72,6 @@ var nps_lobby = io.on('connection', function (socket) {
     console.log(sockets);
     // console.log(sockets.get(socket.id).socket_name);
   })
-/*
-  socket.on('updateSocket', (room_num)=>{
-    console.log("updateSocket!!!!!");
-    // info: room_num == 0, not enter / else, enter room
-    if (room_num == -1) { // leave room
-      sockets.get(socket.id).room_num = NO_ROOM;
-      sockets.get(socket.id).enter_state = NOT_ENTER;
-      // sockets.set(socket.id, {socket_id:socket.id, socket_name:'SOCKET '+socket_num, room_num:NO_ROOM, enter_state:NOT_ENTER});
-    } else if (room_num >= 0) {
-      sockets.get(socket.id).room_num = room_num;
-      sockets.get(socket.id).enter_state = ENTER;
-      // sockets.set(socket.id, {socket_id:socket.id, socket_name:'SOCKET '+socket_num, room_num:room_num, enter_state:ENTER});
-    }
-    console.log(sockets);
-  })
-*/
   //~loginScene
 
   // lobbyScene ~
@@ -128,7 +112,7 @@ var nps_lobby = io.on('connection', function (socket) {
           io.to(socket.id).emit('ChangeRoomScene', roomnum, rooms[idx].room_name, io.sockets.adapter.rooms[idx].length+1);
         }
 
-        console.log("enterroom!!!!!");
+        // console.log("enterroom!!!!!");
       }
     }
   });
@@ -144,7 +128,7 @@ var nps_lobby = io.on('connection', function (socket) {
     socket.broadcast.emit('aswrooms', rooms);
     io.emit('broadcastInfo');
 
-    console.log("joinroom!!!!!");
+    // console.log("joinroom!!!!!");
   });
 
   socket.on('broadcastInfo',()=>{
@@ -176,9 +160,14 @@ var nps_lobby = io.on('connection', function (socket) {
   });
 
   socket.on('gameStart',(roomnum)=>{
+    console.log(roomnum+"번방 gameStart!!!");
+
+    rooms[roomnum].roomstate = ROOMPLAYING;
     rooms[roomnum].tiles = makeTile();
+    console.log('eeeeeee');
+
     io.to(roomnum).emit('gameStart');
-    rooms.roomstate=ROOMPLAYING;
+    socket.broadcast.emit('aswrooms', rooms);
   });
   // ~roomScene
 
@@ -192,6 +181,8 @@ var nps_lobby = io.on('connection', function (socket) {
   })
   socket.on('playerDie',(roomnum)=>{
     socket.broadcast.to(roomnum).emit('overText','You WIN!!');
+    rooms[roomnum].roomstate = ROOMFULL;
+    socket.broadcast.emit('aswrooms', rooms);
     io.to(roomnum).emit('gameEnd');
   })
   socket.on('playSound',(roomnum,sound)=>{
@@ -257,6 +248,7 @@ function makeTile() {
 }
 
 function updateRoomsInfo() {
+  console.log("updateRoomsInfo");
 
   for (var i = 0; i < rooms.length; i++) {
     var clientNum =0;
@@ -265,7 +257,9 @@ function updateRoomsInfo() {
     }
     if (clientNum == 0) rooms[i].roomstate = ROOMEMPTY;
     else if (clientNum == 1) rooms[i].roomstate = ROOMWAITING;
-    else if (clientNum == 2) rooms[i].roomstate = ROOMFULL;
+    else if (clientNum == 2) {
+      if (rooms[i].roomstate != ROOMPLAYING) rooms[i].roomstate = ROOMFULL;
+    }
   }
 }
 

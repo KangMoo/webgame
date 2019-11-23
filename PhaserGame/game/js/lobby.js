@@ -104,7 +104,7 @@ var LobbyScene = new Phaser.Class({
         this.sound.play('btn');
         this.scene.start('loginmenu');
     },
-    eneterRoom: function () {
+    enterRoom: function () {
     },
     roomupdate:function(data){
       if(this.rooms.length!=0){

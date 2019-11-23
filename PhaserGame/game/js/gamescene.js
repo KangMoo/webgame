@@ -36,24 +36,25 @@ var GameScene = new Phaser.Class({
 
 	init: function (settings) {
 		this.roomnum = settings.roomnum;
+		this.roomname = settings.roomname;
 		this.settings = settings;
 	},
 	preload: function () {
 	},
 
 	create: function () {
-		
+
 		//map setting
 		this.fTiles = this.add.group();
 		this.cTiles = this.physics.add.group({ immovable: true });
 		this.bTiles = this.physics.add.group({ immovable: true });
-		
+
 		//console.log(this.IS_TOUCH);
 
 		// add player sprite
 		this.player = this.physics.add.sprite(this.settings.sx,this.settings.sy, 'sprite');
 		//this.player = this.physics.add.sprite(TILE_SIZE_X + TILE_SIZE_X / 2, TILE_SIZE_Y, 'sprite');
-		
+
 		this.player.setSize(30, 25).setOffset(15, 70);
 		this.player.Info = {
 			dir: DIR_DOWN,
@@ -92,14 +93,14 @@ var GameScene = new Phaser.Class({
 
 		this.bombs = this.physics.add.group({ immovable: true });
 		this.bombs_e = this.physics.add.group({ immovable: true });
-		
+
 		this.physics.add.collider(this.player, [this.cTiles, this.bTiles, this.bombs, this.bombs_e],this.ovlPlayerTile,null,this);
-		
+
 		this.physics.add.overlap([this.player,this.opponent], this.gameitems, this.playerGetItem, null, this);
-		
+
 		this.physics.add.overlap(this.bombs, [this.bombs,this.bombs_e], this.ovlBombs, null, this);
 		this.physics.add.overlap(this.bombs_e, [this.bombs,this.bombs_e], this.ovlBombs, null, this);
-		
+
 		//
 		this.physics.add.overlap(this.flames, this.player, this.ovlFlamePlayer, null, this);
 		this.physics.add.overlap(this.flames, this.bTiles, this.ovlFlameBTile, null, this);
@@ -239,7 +240,7 @@ var GameScene = new Phaser.Class({
 			this.opponent.setDepth(4);
 			this.player.setDepth(5);
 		}
-		
+
 		this.socket.emit('playerUpdate',this.roomnum,this.player.Info);
 		this.playerInfoUpdate();
 	},
@@ -299,12 +300,12 @@ var GameScene = new Phaser.Class({
 	explode: function (x, y, power) {
 		//flamesize calculate
 		this.sound.play('explosion');
-		
+
 		x = parseInt(x / TILE_SIZE_X) * TILE_SIZE_X;
 		y = parseInt(y / TILE_SIZE_Y) * TILE_SIZE_Y;
 
 
-		
+
 		this.makeArm(x, y, power, DIR_UP);
 		this.makeArm(x, y, power, DIR_LEFT);
 		this.makeArm(x, y, power, DIR_RIGHT);
@@ -401,7 +402,7 @@ var GameScene = new Phaser.Class({
 				duration: 100,
 				alpha: 0,
 
-				onComplete: () => { 
+				onComplete: () => {
 					flame.destroy(); }
 			});
 		});
@@ -419,7 +420,7 @@ var GameScene = new Phaser.Class({
 		this.playerDie();
 	},
 	setBomb: function (x, y, pow) {
-		
+
 		this.sound.play('setBomb');
 		x = parseInt(x / TILE_SIZE_X) * TILE_SIZE_X + TILE_SIZE_X / 2;
 		y = parseInt(y / TILE_SIZE_Y) * TILE_SIZE_Y + TILE_SIZE_Y / 2;
@@ -460,7 +461,7 @@ var GameScene = new Phaser.Class({
 		if(this.cursors.down.isDown) dircount ++;
 		if(this.cursors.left.isDown) dircount ++;
 		if(this.cursors.right.isDown) dircount ++;
-		
+
 		var pTilePos = {
 			x:parseInt(player.x/TILE_SIZE_X)*TILE_SIZE_X + TILE_SIZE_X/2,
 			y:parseInt(player.y/TILE_SIZE_Y)*TILE_SIZE_Y + TILE_SIZE_Y/2
@@ -468,7 +469,7 @@ var GameScene = new Phaser.Class({
 		var velocity = {};
 		velocity.x = pTilePos.x < player.x ? -1 : 1;
 		velocity.y = pTilePos.y < player.y ? -1 : 1;
-		
+
 		if(dircount != 1) return;
 		if(player.Info.dir == DIR_LEFT ||player.Info.dir == DIR_RIGHT)
 		{
@@ -481,9 +482,9 @@ var GameScene = new Phaser.Class({
 		*/
 	},
 	playerDie: function () {
-		
+
 		if (this.player.Info.state == STATE_DIE) return;
-		
+
 		this.player.Info.state = STATE_DIE;
 		this.socket.emit('playSound',this.roomnum,'die');
 		this.sound.play('die');
@@ -503,8 +504,8 @@ var GameScene = new Phaser.Class({
 				duration: 450,
 				alpha: 0,
 
-				onComplete: () => { 
-					
+				onComplete: () => {
+
 					var ovltile = this.TILES[parseInt(tile.x / TILE_SIZE_X)][parseInt(tile.y / TILE_SIZE_Y)];
 					if(ovltile >= TYPE_SPEEDUP)
 					{
@@ -514,7 +515,7 @@ var GameScene = new Phaser.Class({
 					tile.destroy();
 					}
 			});
-		
+
 	},
 	itemAdd:function(x,y,item)
 	{
@@ -549,7 +550,7 @@ var GameScene = new Phaser.Class({
 		newobj.setSize(TILE_SIZE_X - 2, TILE_SIZE_Y - 2).setOffset(1, 1);
 		this.gameitems.add(newobj);
 	},
-	
+
 	playerGetItem: function (player, item) {
 		this.sound.play('getItem');
 		if (item.data.values.type == TYPE_BOMBUP) {
@@ -597,7 +598,7 @@ var GameScene = new Phaser.Class({
 				ease: 'Power3',
 				duration: 1000,
 				delay: 500
-				
+
 			}
 		);
 	},
@@ -607,7 +608,7 @@ var GameScene = new Phaser.Class({
 		this.bgm.loop = true;
 		this.bgm.volume = 0.1;
 		this.bgm.play();
-		this.scene.start('roomscene',{roomnum:this.roomnum, pnum:this.settings.pnum});
+		this.scene.start('roomscene',{roomnum:this.roomnum, roomname:this.roomname, pnum:this.settings.pnum});
 	},
 	setTileMap: function () {
 
