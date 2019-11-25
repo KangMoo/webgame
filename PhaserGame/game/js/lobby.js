@@ -12,10 +12,9 @@ var LobbyScene = new Phaser.Class({
     Extends: Phaser.Scene,
 
     initialize:
-
-        function LobbyScene() {
-            Phaser.Scene.call(this, { key: 'lobbyscene' });
-        },
+    function LobbyScene() {
+        Phaser.Scene.call(this, { key: 'lobbyscene' });
+    },
     init: function () {
     },
     preload: function () {
@@ -24,6 +23,7 @@ var LobbyScene = new Phaser.Class({
     create: function () {
         this.rooms = [];
         this.txts = [];
+        this.roomName = [];
         this.page=0;
         //this.roomGroup=this.add.group();
 
@@ -31,6 +31,40 @@ var LobbyScene = new Phaser.Class({
         //socket ~
         if(this.socket.firstSetting.lobbyScene == false){
             this.socket.firstSetting.lobbyScene = true;
+
+            this.socket.on('aswrooms', (data) => {
+              console.log(data);
+              this.roomupdate(data);
+            });
+
+            this.socket.on('toroom', (data) => {
+              this.socket.emit('enterroom', data, this.socket.id);
+              //this.roomupdate(data);
+            });
+
+            this.socket.on('serverMsg', (Msg) => {
+                var txt = this.scene.add.bitmapText(400, 600 - 100, 'fontwhite', Msg);
+                txt.setOrigin(0.5).setCenterAlign();
+                var tw = this.scene.tweens.add(
+                    {
+                        targets: txt,
+                        alpha: 0.0,
+                        ease: 'Power3',
+                        duration: 1000,
+                        delay: 500
+                    }
+                );
+            });
+
+            this.socket.on('ChangeRoomScene', (roomNum,roomName,pnum) => {
+              console.log("go to room")
+                var setting = {
+                    roomnum:roomNum,
+                    roomname:roomName,
+                    pnum:pnum
+                };
+                this.scene.start('roomscene',setting);
+            });
         }
 
         this.makebtn = this.add.image(this.game.config.width / 2, 5 * 90 + 50, 'uisprite', 'button').setInteractive();
@@ -60,39 +94,54 @@ var LobbyScene = new Phaser.Class({
           }
         });
 
-        this.socket.on('aswrooms', (data) => {
-          console.log(data);
-          this.roomupdate(data);
+        this.befobtn =this.add.image(this.game.config.width / 8, 5 * 90 + 50, 'uisprite', 'button').setInteractive();
+        this.befobtn.displayWidth = 80;
+        this.befobtn.displayHeight = 40;
+        this.befotxt = this.add.bitmapText(this.befobtn.x, this.befobtn.y-10, 'fontwhite', '<');
+        this.befotxt.setOrigin(0.5).setCenterAlign();
+        this.befobtn.on('pointerdown', function (ptr) {
+            this.displayWidth = 70;
+            this.displayHeight = 30;
         });
+        this.befobtn.on('pointerout', function (ptr) {
+            if (this.displayWidth == 70) {
+                this.displayWidth = 80;
+                this.displayHeight = 40;
+            }
+        });
+        this.befobtn.on('pointerup', function (ptr) {
+          console.log(this.page);
+          if(this.page>0){
+            console.log("??");
+            this.page-=1;
+            this.roomupdate(this.everyRoomInfo);
+          }
+        },this);
 
-        this.socket.on('toroom', (data) => {
-          this.socket.emit('enterroom', data, this.socket.id);
-          //this.roomupdate(data);
+        this.afterbtn =this.add.image(this.game.config.width / 8*7, 5 * 90 + 50, 'uisprite', 'button').setInteractive();
+        this.afterbtn.displayWidth = 80;
+        this.afterbtn.displayHeight = 40;
+        this.aftertxt = this.add.bitmapText(this.afterbtn.x, this.afterbtn.y-10, 'fontwhite', '>');
+        this.aftertxt.setOrigin(0.5).setCenterAlign();
+        this.afterbtn.on('pointerdown', function (ptr) {
+            this.displayWidth = 70;
+            this.displayHeight = 30;
         });
+        this.afterbtn.on('pointerout', function (ptr) {
+            if (this.displayWidth == 70) {
+                this.displayWidth = 80;
+                this.displayHeight = 40;
+            }
+        });
+        this.afterbtn.on('pointerup', function (ptr) {
+          console.log("aa",this.everyRoomInfo);
+          console.log(this.page);
+          if(this.page+1 <= Math.ceil(this.everyRoomInfo.length/5)-1){
+            this.page+=1;
+            this.roomupdate(this.everyRoomInfo);
+          }
+        },this);
 
-        this.socket.on('serverMsg', (Msg) => {
-            var txt = this.scene.add.bitmapText(400, 600 - 100, 'fontwhite', Msg);
-            txt.setOrigin(0.5).setCenterAlign();
-            var tw = this.scene.tweens.add(
-                {
-                    targets: txt,
-                    alpha: 0.0,
-                    ease: 'Power3',
-                    duration: 1000,
-                    delay: 500
-                }
-            );
-        });
-
-        this.socket.on('ChangeRoomScene', (roomNum,roomName,pnum) => {
-          console.log("go to room")
-            var setting = {
-                roomnum:roomNum,
-                roomname:roomName,
-                pnum:pnum
-            };
-            this.scene.start('roomscene',setting);
-        });
 
         this.btnquit = this.addButton(770, 30, 'uisprite', this.doBack, this, 'button_x', 'button_x', 'button_x', 'button_x');
 
@@ -112,14 +161,14 @@ var LobbyScene = new Phaser.Class({
           //this.rooms[i].setVisible(false)
           this.rooms[i].destroy();
           this.txts[i].destroy();
+          this.roomName[i].destroy();
         }
       }
       this.rooms=[];
       this.txts=[];
-      //this.roomGroup.clear(true);
-      //console.log("after",this.roomGroup);
+      this.roomName=[];
+      this.everyRoomInfo=data;
       for (var i = 0,idx=this.page*5; idx < data.length && i<5; i++,idx++) {
-          console.log(idx,data.length);
           this.rooms[i] = this.add.image(this.game.config.width / 2, i * 90 + 50, 'uisprite', 'button').setInteractive();
           this.rooms[i].id=idx;
           this.rooms[i].name = data[idx].room_name;
@@ -132,22 +181,23 @@ var LobbyScene = new Phaser.Class({
           });
           this.rooms[i].on('pointerup', function (ptr) {
             this.scene.sound.play('btn');
-              var roomnum = String(parseInt((ptr.y+25+80)/90-1));
-
-              if (this.displayWidth == 385) {
-                  if (this.state == ROOMEMPTY || this.state == ROOMWAITING) {
-                      var txt = this.scene.add.bitmapText(400, 600 - 100, 'fontwhite', 'Entering...');
-                      txt.setOrigin(0.5).setCenterAlign();
-                      var tw = this.scene.tweens.add(
-                          {
-                              targets: txt,
-                              alpha: 0.0,
-                              ease: 'Power3',
-                              duration: 1000,
-                              delay: 10000
-                          }
-                      );
-                      this.scene.socket.emit('enterroom', roomnum, this.scene.socket.id);
+            console.log("!!",this.id);
+            //var roomnum = String(parseInt((ptr.y+25+80)/90-1));
+            var roomnum=this.id;
+            if (this.displayWidth == 385) {
+                if (this.state == ROOMEMPTY || this.state == ROOMWAITING) {
+                    var txt = this.scene.add.bitmapText(400, 600 - 100, 'fontwhite', 'Entering...');
+                    txt.setOrigin(0.5).setCenterAlign();
+                    var tw = this.scene.tweens.add(
+                      {
+                            targets: txt,
+                            alpha: 0.0,
+                            ease: 'Power3',
+                            duration: 1000,
+                            delay: 10000
+                      }
+                    );
+                    this.scene.socket.emit('enterroom', roomnum, this.scene.socket.id);
                   }
                   else if (this.state == ROOMFULL || this.state == ROOMPLAYING) {
                       var txt = this.scene.add.bitmapText(400, 600 - 100, 'fontwhite', 'Can not Enter Room!!');
@@ -173,9 +223,6 @@ var LobbyScene = new Phaser.Class({
                   this.displayHeight = 80;
               }
           });
-          //this.rooms.push(room);
-
-          //obj.rooms[i].state = data[i].roomstate;
           var text="";
           if (this.rooms[i].state == ROOMEMPTY) {
               text = 'Empty';
@@ -193,7 +240,7 @@ var LobbyScene = new Phaser.Class({
           this.txts[i] = this.add.bitmapText(this.rooms[i].x + 150, this.rooms[i].y + 15, 'fontwhite', text, 20);
           this.txts[i].setOrigin(0.5).setCenterAlign();
           //this.txts.push(txt);
-          var tmp_room_name = this.add.bitmapText(this.rooms[i].x - 180, this.rooms[i].y - 30, 'fontwhite', this.rooms[i].name, 30);
+          this.roomName[i] = this.add.bitmapText(this.rooms[i].x - 180, this.rooms[i].y - 30, 'fontwhite', this.rooms[i].name, 30);
           //tmp_room_name.setOrigin(0.5).setCenterAlign();
           //this.rooms[i].name.setOrigin(0.5).setCenterAlign();
 
@@ -201,5 +248,4 @@ var LobbyScene = new Phaser.Class({
           //this.roomGroup.add(txt);
       }
     }
-
 });
