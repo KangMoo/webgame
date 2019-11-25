@@ -82,13 +82,31 @@ var nps_lobby = io.on('connection', function (socket) {
   });
 
   socket.on('makerooms', () => {
-    rooms.push({room_id:room_id, room_name: 'ROOM '+room_id, player: [], roomstate: ROOMEMPTY, tiles: []});
+    rooms.push({room_id:room_id, room_name: 'ROOM '+room_id, player: [], roomstate: ROOMWAITING, tiles: []});
     //console.log(rooms);
     socket.emit('toroom',room_id);
     room_id+=1;
     //socket.broadcast.emit('aswrooms', rooms);
   });
-
+  socket.on('enterroom0', (roomnum, userid) => {
+    var idx=rooms.findIndex(obj => obj.room_id==roomnum);
+    if(idx>=0){
+      if (rooms[idx].roomstate == ROOMFULL || rooms[idx].roomstate == ROOMPLAYING) {
+        socket.emit('aswrooms', rooms);
+        socket.emit('serverMsg', 'Can not enter room!!');
+      }
+      else {
+        if(typeof io.sockets.adapter.rooms[roomnum] == 'undefined')
+        {
+          io.to(socket.id).emit('ChangeRoomScene', roomnum, rooms[idx].room_name, 1);
+        }
+        else
+        {
+          io.to(socket.id).emit('ChangeRoomScene', roomnum, rooms[idx].room_name, io.sockets.adapter.rooms[roomnum].length+1);
+        }
+      }
+    }
+  });
   socket.on('enterroom', (roomnum, userid) => {
     //console.log(rooms,roomnum);
     //console.log(rooms[roomnum]);
@@ -103,13 +121,13 @@ var nps_lobby = io.on('connection', function (socket) {
         updateRoomsInfo();
         //io.sockets.broadcast.emit('aswrooms', rooms);
         //socket.broadcast.emit('aswrooms', rooms);
-        if(typeof io.sockets.adapter.rooms[idx] == 'undefined')
+        if(typeof io.sockets.adapter.rooms[roomnum] == 'undefined')
         {
           io.to(socket.id).emit('ChangeRoomScene', roomnum, rooms[idx].room_name, 1);
         }
         else
         {
-          io.to(socket.id).emit('ChangeRoomScene', roomnum, rooms[idx].room_name, io.sockets.adapter.rooms[idx].length+1);
+          io.to(socket.id).emit('ChangeRoomScene', roomnum, rooms[idx].room_name, io.sockets.adapter.rooms[roomnum].length+1);
         }
 
         // console.log("enterroom!!!!!");
@@ -122,9 +140,13 @@ var nps_lobby = io.on('connection', function (socket) {
   // roomScene ~
 
   socket.on('joinRoom', (roomnum, pnum) => {
+    console.log("!!!!!",roomnum);
     socket.join(roomnum);
     updateSocket(roomnum, socket.id);
+
+    console.log("befo\n",rooms);
     updateRoomsInfo();
+    console.log("after\n",rooms);
     socket.broadcast.emit('aswrooms', rooms);
     io.emit('broadcastInfo');
 
@@ -139,7 +161,8 @@ var nps_lobby = io.on('connection', function (socket) {
   })
 
   socket.on('chgRoomName',(roomnum,name,pnum)=>{
-    rooms[roomnum].room_name = name;
+    var idx=rooms.findIndex(obj => obj.room_id==roomnum);
+    rooms[idx].room_name = name;
     socket.broadcast.emit('aswrooms', rooms);
     io.to(roomnum).emit('chgRoomName',name,socket.id,pnum);
   });
@@ -151,7 +174,15 @@ var nps_lobby = io.on('connection', function (socket) {
     //rooms.splice(idx,1);
     updateSocket(-1, socket.id);
     updateRoomsInfo();
-
+    // var clientNum =0;
+    // if (io.sockets.adapter.rooms[String(roomnum)]) {
+    //   clientNum = io.sockets.adapter.rooms[String(roomnum)].length;
+    // }
+    // if(clientNum ==0){
+    //   var idx=rooms.findIndex(obj => obj.room_id==roomnum);
+    //   rooms.splice(idx,1);
+    // }
+    //console.log(clientNum,rooms);
     socket.broadcast.emit('aswrooms', rooms);
   });
 
@@ -161,9 +192,9 @@ var nps_lobby = io.on('connection', function (socket) {
 
   socket.on('gameStart',(roomnum)=>{
     console.log(roomnum+"번방 gameStart!!!");
-
-    rooms[roomnum].roomstate = ROOMPLAYING;
-    rooms[roomnum].tiles = makeTile();
+    var idx=rooms.findIndex(obj => obj.room_id==roomnum);
+    rooms[idx].roomstate = ROOMPLAYING;
+    rooms[idx].tiles = makeTile();
     console.log('eeeeeee');
 
     io.to(roomnum).emit('gameStart');
@@ -181,7 +212,8 @@ var nps_lobby = io.on('connection', function (socket) {
   })
   socket.on('playerDie',(roomnum)=>{
     socket.broadcast.to(roomnum).emit('overText','You WIN!!');
-    rooms[roomnum].roomstate = ROOMFULL;
+    var idx=rooms.findIndex(obj => obj.room_id==roomnum);
+    rooms[idx].roomstate = ROOMFULL;
     socket.broadcast.emit('aswrooms', rooms);
     io.to(roomnum).emit('gameEnd');
   })
@@ -189,7 +221,8 @@ var nps_lobby = io.on('connection', function (socket) {
     socket.broadcast.to(roomnum).emit('playSound',sound);
   })
   socket.on('makeMap',(roomnum)=>{
-    io.to(roomnum).emit('makeMap',rooms[roomnum].tiles);
+    var idx=rooms.findIndex(obj => obj.room_id==roomnum);
+    io.to(roomnum).emit('makeMap',rooms[idx].tiles);
   })
   // ~ gameScene
   socket.on('disconnect',()=>{
@@ -252,11 +285,15 @@ function updateRoomsInfo() {
 
   for (var i = 0; i < rooms.length; i++) {
     var clientNum =0;
-    if (io.sockets.adapter.rooms[String(i)]) {
-      clientNum = io.sockets.adapter.rooms[String(i)].length;
+    var connect_id=rooms[i].room_id;
+    if (io.sockets.adapter.rooms[String(connect_id)]) {
+      clientNum = io.sockets.adapter.rooms[String(connect_id)].length;
     }
-    if (clientNum == 0) rooms[i].roomstate = ROOMEMPTY;
-    else if (clientNum == 1) rooms[i].roomstate = ROOMWAITING;
+    if (clientNum == 0) {
+      rooms[i].roomstate = ROOMEMPTY;
+      //var idx=rooms.findIndex(obj => obj.room_id==roomnum);
+      rooms.splice(i,1);
+    }else if (clientNum == 1) rooms[i].roomstate = ROOMWAITING;
     else if (clientNum == 2) {
       if (rooms[i].roomstate != ROOMPLAYING) rooms[i].roomstate = ROOMFULL;
     }

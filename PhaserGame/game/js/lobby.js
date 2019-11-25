@@ -21,6 +21,13 @@ var LobbyScene = new Phaser.Class({
     },
 
     create: function () {
+        if(this.rooms){
+          for (var i = 0; i < this.rooms.length; i++) {
+            this.rooms[i].destroy();
+            this.txts[i].destroy();
+            this.roomName[i].destroy();
+          }
+        }
         this.rooms = [];
         this.txts = [];
         this.roomName = [];
@@ -33,12 +40,12 @@ var LobbyScene = new Phaser.Class({
             this.socket.firstSetting.lobbyScene = true;
 
             this.socket.on('aswrooms', (data) => {
-              console.log(data);
+              console.log("??",data);
               this.roomupdate(data);
             });
 
             this.socket.on('toroom', (data) => {
-              this.socket.emit('enterroom', data, this.socket.id);
+              this.socket.emit('enterroom0', data, this.socket.id);
               //this.roomupdate(data);
             });
 
@@ -112,7 +119,6 @@ var LobbyScene = new Phaser.Class({
         this.befobtn.on('pointerup', function (ptr) {
           console.log(this.page);
           if(this.page>0){
-            console.log("??");
             this.page-=1;
             this.roomupdate(this.everyRoomInfo);
           }
@@ -144,7 +150,7 @@ var LobbyScene = new Phaser.Class({
 
 
         this.btnquit = this.addButton(770, 30, 'uisprite', this.doBack, this, 'button_x', 'button_x', 'button_x', 'button_x');
-
+        console.log("hahahahaha",this.rooms)
         this.socket.emit('rqrooms');
     },
     update: function () {
@@ -156,13 +162,13 @@ var LobbyScene = new Phaser.Class({
     enterRoom: function () {
     },
     roomupdate:function(data){
-      if(this.rooms.length!=0){
-        for (var i = 0; i < this.rooms.length; i++) {
-          //this.rooms[i].setVisible(false)
-          this.rooms[i].destroy();
-          this.txts[i].destroy();
-          this.roomName[i].destroy();
-        }
+      console.log("room.length",this.rooms.length);
+      console.log(this.rooms);
+      console.log(data);
+      for (var i = 0; i < this.rooms.length; i++) {
+        this.rooms[i].destroy();
+        this.txts[i].destroy();
+        this.roomName[i].destroy();
       }
       this.rooms=[];
       this.txts=[];
@@ -170,6 +176,7 @@ var LobbyScene = new Phaser.Class({
       this.everyRoomInfo=data;
       for (var i = 0,idx=this.page*5; idx < data.length && i<5; i++,idx++) {
           this.rooms[i] = this.add.image(this.game.config.width / 2, i * 90 + 50, 'uisprite', 'button').setInteractive();
+          this.rooms[i].idx=data[idx].room_id;
           this.rooms[i].id=idx;
           this.rooms[i].name = data[idx].room_name;
           this.rooms[i].state = data[idx].roomstate;
@@ -181,9 +188,10 @@ var LobbyScene = new Phaser.Class({
           });
           this.rooms[i].on('pointerup', function (ptr) {
             this.scene.sound.play('btn');
-            console.log("!!",this.id);
+            console.log("!!",this.idx);
             //var roomnum = String(parseInt((ptr.y+25+80)/90-1));
-            var roomnum=this.id;
+            console.log(this);
+            var roomnum=this.idx;
             if (this.displayWidth == 385) {
                 if (this.state == ROOMEMPTY || this.state == ROOMWAITING) {
                     var txt = this.scene.add.bitmapText(400, 600 - 100, 'fontwhite', 'Entering...');
@@ -197,6 +205,7 @@ var LobbyScene = new Phaser.Class({
                             delay: 10000
                       }
                     );
+                    console.log("//////roomnum",roomnum);
                     this.scene.socket.emit('enterroom', roomnum, this.scene.socket.id);
                   }
                   else if (this.state == ROOMFULL || this.state == ROOMPLAYING) {
@@ -247,5 +256,6 @@ var LobbyScene = new Phaser.Class({
           //this.roomGroup.add(room);
           //this.roomGroup.add(txt);
       }
+      console.log("TTTTTTTTTT",this.rooms.length);
     }
 });

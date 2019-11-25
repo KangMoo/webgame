@@ -194,7 +194,7 @@ var RoomScene = new Phaser.Class({
                 );
             })
         }
-
+        console.log("roomnum////:",this.roomnum)
         this.socket.emit('joinRoom', this.roomnum, this.pnum);
 
         this.btnquit = this.addButton(770, 30, 'uisprite', this.doBack, this, 'button_x', 'button_x', 'button_x', 'button_x');
