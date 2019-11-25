@@ -60,18 +60,22 @@ var Preloader = new Phaser.Class({
 
 	preload: function ()
 	{
+		var url;
+        
+		this.load.plugin('rexvirtualjoystickplugin', 'dist/rexvirtualjoystickplugin.min.js', true);
+
+		//load html files
 		this.load.html('joinform', 'html/join.html');
 		this.load.html('nameform', 'html/login.html');
 		this.load.html('roomName', 'html/roomName.html');
 		this.load.html('chattingBox', 'html/chattingBox.html');
 		this.load.html('createroomform', 'html/createroom.html');
-
-
-		//touch config
+		
+		//set touch config
 		this.input.addPointer(2);
-		this.IS_TOUCH = false;
+		this.game.IS_TOUCH = false;
 		window.addEventListener('touchstart',function(){
-			IS_TOUCH = true;
+			this.game.IS_TOUCH = true;
 		});
 		this.socket = io();
 		// setup the loading bar

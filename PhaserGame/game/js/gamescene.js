@@ -44,6 +44,7 @@ var GameScene = new Phaser.Class({
 
 	create: function () {
 
+
 		//map setting
 		this.fTiles = this.add.group();
 		this.cTiles = this.physics.add.group({ immovable: true });
@@ -110,10 +111,32 @@ var GameScene = new Phaser.Class({
 		// player input
 		this.cursors = this.input.keyboard.createCursorKeys();
 		this.spacebar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-
+		if(this.game.IS_TOUCH == true)
+		{
+			console.log("IS_TOUCH : true");
+			this.joyStick = this.plugins.get('rexvirtualjoystickplugin').add(this, {
+                x: 200,
+                y: 400,
+                radius: 100,
+                base: this.add.graphics().fillStyle(0x888888).fillCircle(0, 0, 100),
+                thumb: this.add.graphics().fillStyle(0xcccccc).fillCircle(0, 0,50),
+                // dir: '8dir',   // 'up&down'|0|'left&right'|1|'4dir'|2|'8dir'|3
+                // forceMin: 16,
+                // enable: true
+            })
+			.on('update', this.dumpJoyStickState, this);
+			console.log(this.joyStick);
+			//this.dumpJoyStickState();
+			
+			this.joyStick.base.alpha = 0.3;
+			this.joyStick.base.depth = 6;
+			this.joyStick.thumb.alpha = 0.3;
+			this.joyStick.thumb.depth = 6;
+		}
 		// quit to menu button
 		//this.btnquit = this.addButton(770, 30, 'uisprite', this.doBack, this, 'button_x', 'button_x', 'button_x', 'button_x');
-
+		console.log(this.joyStick);
+		console.log(this);
 		// secket connection ~
 		this.socket = this.game.socket;
 
@@ -240,7 +263,7 @@ var GameScene = new Phaser.Class({
 			this.opponent.setDepth(4);
 			this.player.setDepth(5);
 		}
-
+		//this.joyStick.setDepth(6);
 		this.socket.emit('playerUpdate',this.roomnum,this.player.Info);
 		this.playerInfoUpdate();
 	},
@@ -633,7 +656,18 @@ var GameScene = new Phaser.Class({
 				}
 			}
 		}
-	}
-
+	},
+	dumpJoyStickState: function() {
+        var cursorKeys = this.joyStick.createCursorKeys();
+        var s = 'Key down: ';
+        for (var name in cursorKeys) {
+            if (cursorKeys[name].isDown) {
+                s += name + ' ';
+            }
+        }
+        s += '\n';
+        s += ('Force: ' + Math.floor(this.joyStick.force * 100) / 100 + '\n');
+        s += ('Angle: ' + Math.floor(this.joyStick.angle * 100) / 100 + '\n');
+    }
 
 });

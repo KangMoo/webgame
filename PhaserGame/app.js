@@ -7,8 +7,9 @@ var logger = require('morgan');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var gamesceneRouter = require('./routes/gameScene');
+var pluginsRounter = require('./routes/plugins');
 var heejeRouter = require('./routes/heeje');
-
+const fs = require('fs');
 var app = express();
 
 // view engine setup
@@ -21,11 +22,14 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/game',gamesceneRouter);
 app.use('/heeje',heejeRouter);
-
+app.use('/plugins',pluginsRounter);
+// Continue application logic here
+app.use(express.static('./game/js/plugins'));
 //app.use(express.static('./games/FlappyBird'));
 //app.use(express.static('./games/SocketCommunicationTest'));
 //app.use(express.static('./games/heeje'));

@@ -35,7 +35,6 @@ var LoginMenu = new Phaser.Class({
             gameScene : false
         }
         this.game.socket.emit('saveSocket', this.game.socket.id);
-
         /*
         var text = this.add.text(10, 10, 'Please login to play', { color: 'white', fontFamily: 'Arial', fontSize: '32px '});
 
@@ -128,9 +127,11 @@ var LoginMenu = new Phaser.Class({
             duration: 5000,
             ease: 'Power3'
         });
-    },
 
-	  doStart: function ()
+      
+    },
+   
+	 doStart: function ()
     {
         console.log('menuscene doStart was called!');
         this.sound.play('btn');
