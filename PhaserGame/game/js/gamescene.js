@@ -24,6 +24,13 @@ const TYPE_SPEEDUP = 16;
 const TYPE_BOMBUP  = 32;
 const TYPE_POWERUP = 64;
 
+const CONTROL_NONE = 0;
+const CONTROL_UP = 1;
+const CONTROL_DOWN = 2;
+const CONTROL_LEFT = 4;
+const CONTROL_RIGHT = 8;
+const CONTROL_BOMB = 16;
+
 var GameScene = new Phaser.Class({
 
 	Extends: Phaser.Scene,
@@ -109,34 +116,42 @@ var GameScene = new Phaser.Class({
 
 		this.physics.add.overlap(this.flames, [this.bombs,this.bombs_e], this.ovlFlameBomb, null, this);
 		// player input
+		this.userControl = CONTROL_NONE;
+
 		this.cursors = this.input.keyboard.createCursorKeys();
 		this.spacebar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+		this.wasdKeys = this.input.keyboard.addKeys(
+			{up:Phaser.Input.Keyboard.KeyCodes.W,
+			down:Phaser.Input.Keyboard.KeyCodes.S,
+			left:Phaser.Input.Keyboard.KeyCodes.A,
+			right:Phaser.Input.Keyboard.KeyCodes.D});
+		
 		if(this.game.IS_TOUCH == true)
 		{
-			console.log("IS_TOUCH : true");
 			this.joyStick = this.plugins.get('rexvirtualjoystickplugin').add(this, {
-                x: 200,
+                x: 100,
                 y: 400,
-                radius: 100,
-                base: this.add.graphics().fillStyle(0x888888).fillCircle(0, 0, 100),
-                thumb: this.add.graphics().fillStyle(0xcccccc).fillCircle(0, 0,50),
+                radius: 50,
+                base: this.add.graphics().fillStyle(0x888888).fillCircle(0, 0, 50),
+                thumb: this.add.graphics().fillStyle(0xcccccc).fillCircle(0, 0,25),
                 // dir: '8dir',   // 'up&down'|0|'left&right'|1|'4dir'|2|'8dir'|3
                 // forceMin: 16,
                 // enable: true
             })
 			.on('update', this.dumpJoyStickState, this);
-			console.log(this.joyStick);
 			//this.dumpJoyStickState();
 			
 			this.joyStick.base.alpha = 0.3;
 			this.joyStick.base.depth = 6;
 			this.joyStick.thumb.alpha = 0.3;
 			this.joyStick.thumb.depth = 6;
+			
+			this.btnqbomb = this.addButton(700, 400, 'uisprite', this.button_joystick, this, 'button_joystick', 'button_joystick', 'button_joystick', 'button_joystick');
+			this.btnqbomb.alpha = 0.3;
+			this.btnqbomb.depth = 6;
+		
 		}
-		// quit to menu button
-		//this.btnquit = this.addButton(770, 30, 'uisprite', this.doBack, this, 'button_x', 'button_x', 'button_x', 'button_x');
-		console.log(this.joyStick);
-		console.log(this);
+		
 		// secket connection ~
 		this.socket = this.game.socket;
 
@@ -226,6 +241,44 @@ var GameScene = new Phaser.Class({
 		//}
 		this.player.setVelocity(0);
 		if (this.player.Info.state != STATE_DIE) {
+			this.userInputControl();
+			var dontMove = true;
+			if(this.userControl & CONTROL_UP)
+			{
+				this.movePlayer(DIR_UP);
+				dontMove = false;
+			}
+			else if(this.userControl & CONTROL_DOWN)
+			{
+				this.movePlayer(DIR_DOWN);
+				dontMove = false;
+			}
+			if(this.userControl & CONTROL_LEFT)
+			{
+				this.movePlayer(DIR_LEFT);
+				dontMove = false;
+			} 
+			else if(this.userControl & CONTROL_RIGHT)
+			{
+				this.movePlayer(DIR_RIGHT);
+				dontMove = false;
+			}
+
+			if(dontMove == true)
+			{
+				this.playerStop(this.player.Info.dir);
+			}
+			if((this.userControl & CONTROL_BOMB)&& this.player.Info.bombcount > this.bombs.children.size)
+			{
+				var bombInfo = {
+					x:this.player.Info.x,
+					y: this.player.Info.y,
+					pow: this.player.Info.bombpow
+				}
+				this.socket.emit('setBomb',this.roomnum,bombInfo);
+			}
+
+			/*
 			if(this.cursors.up.isDown ||
 				this.cursors.down.isDown ||
 				this.cursors.left.isDown ||
@@ -247,6 +300,7 @@ var GameScene = new Phaser.Class({
 				this.socket.emit('setBomb',this.roomnum,bombInfo);
 				//this.setBomb(this.player.Info.x, this.player.Info.y, this.player.Info.pow);
 			}
+			*/
 		}
 
 		this.gameitems.setDepth(1);
@@ -668,6 +722,65 @@ var GameScene = new Phaser.Class({
         s += '\n';
         s += ('Force: ' + Math.floor(this.joyStick.force * 100) / 100 + '\n');
         s += ('Angle: ' + Math.floor(this.joyStick.angle * 100) / 100 + '\n');
-    }
+	},
+	userInputControl: function(){
+		this.userControl = CONTROL_NONE;
+		
+		if(this.cursors.up.isDown ||
+			this.cursors.down.isDown ||
+			this.cursors.left.isDown ||
+			this.cursors.right.isDown)
+			{
+				if (this.cursors.up.isDown) this.userControl += CONTROL_UP; 
+				else if (this.cursors.down.isDown) this.userControl += CONTROL_DOWN;
+				if (this.cursors.left.isDown) this.userControl += CONTROL_LEFT;
+				else if (this.cursors.right.isDown) this.userControl += CONTROL_RIGHT;
+			}
+			
+		else if(this.wasdKeys.up.isDown ||
+			this.wasdKeys.down.isDown ||
+			this.wasdKeys.left.isDown ||
+			this.wasdKeys.right.isDown)
+		{
+			if (this.wasdKeys.up.isDown) this.userControl += CONTROL_UP; 
+			else if (this.wasdKeys.down.isDown) this.userControl += CONTROL_DOWN;
+			if (this.wasdKeys.left.isDown) this.userControl += CONTROL_LEFT;
+			else if (this.wasdKeys.right.isDown) this.userControl += CONTROL_RIGHT;
+		}
+		
+		else if(this.game.IS_TOUCH == true){
+			var joystickCursor = this.joyStick.createCursorKeys();
+				if(joystickCursor.length != 0)
+				{
+					for(var name in joystickCursor)
+					{
+						if (joystickCursor[name].isDown) {
+							if(name == 'up')
+							this.userControl += CONTROL_UP; 
+							else if(name == 'down')
+								this.userControl += CONTROL_DOWN;
+							else if(name == 'left')
+								this.userControl += CONTROL_LEFT;
+							else if(name == 'right')
+								this.userControl += CONTROL_RIGHT;
+						}
+					}
+				}
+		} 
+		if (Phaser.Input.Keyboard.JustDown(this.spacebar) && this.player.Info.bombcount > this.bombs.children.size) {
+			this.userControl += CONTROL_BOMB;
+		}
+	},
+	button_joystick:function()
+	{
+		if (this.player.Info.bombcount > this.bombs.children.size) {
+			var bombInfo = {
+				x:this.player.Info.x,
+				y: this.player.Info.y,
+				pow: this.player.Info.bombpow
+			}
+			this.socket.emit('setBomb',this.roomnum,bombInfo);
+		}
+	}
 
 });
