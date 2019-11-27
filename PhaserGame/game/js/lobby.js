@@ -117,12 +117,18 @@ var LobbyScene = new Phaser.Class({
             }
         });
         this.befobtn.on('pointerup', function (ptr) {
+          this.scene.sound.play('btn');
           console.log(this.page);
+          if (this.displayWidth == 70) {
+            this.displayWidth = 80;
+            this.displayHeight = 40;
+            }
           if(this.page>0){
             this.page-=1;
+            
             this.roomupdate(this.everyRoomInfo);
           }
-        },this);
+        });
 
         this.afterbtn =this.add.image(this.game.config.width / 8*7, 5 * 90 + 50, 'uisprite', 'button').setInteractive();
         this.afterbtn.displayWidth = 80;
@@ -140,13 +146,18 @@ var LobbyScene = new Phaser.Class({
             }
         });
         this.afterbtn.on('pointerup', function (ptr) {
+            this.scene.sound.play('btn');
+            if (this.displayWidth == 70) {
+                this.displayWidth = 80;
+                this.displayHeight = 40;
+            }
           console.log("aa",this.everyRoomInfo);
           console.log(this.page);
           if(this.page+1 <= Math.ceil(this.everyRoomInfo.length/5)-1){
             this.page+=1;
             this.roomupdate(this.everyRoomInfo);
           }
-        },this);
+        });
 
 
         this.btnquit = this.addButton(770, 30, 'uisprite', this.doBack, this, 'button_x', 'button_x', 'button_x', 'button_x');
