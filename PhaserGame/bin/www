@@ -26,7 +26,6 @@ var MakeID = function () {
 };
 // socket ����? ~
 
-const ROOM_MAX_PLAYER = 2;
 const NOT_ENTER = 0;
 const ENTER = 1;
 
@@ -131,7 +130,18 @@ var nps_lobby = io.on('connection', function (socket) {
         }
         else
         {
-          io.to(socket.id).emit('ChangeRoomScene', roomnum, rooms[idx].room_name, io.sockets.adapter.rooms[roomnum].length+1);
+          //Garbage Code!! Change It Later!!
+          console.log('roomnumtest~')
+          console.log(rooms[roomnum]);
+          console.log('~roomnumtest')
+          if(rooms[roomnum].player[0].pnum ==1)
+          {
+            io.to(socket.id).emit('ChangeRoomScene', roomnum, rooms[idx].room_name,2);
+          }
+          else
+          {
+            io.to(socket.id).emit('ChangeRoomScene', roomnum, rooms[idx].room_name,1);
+          }
         }
 
         // console.log("enterroom!!!!!");
@@ -143,18 +153,19 @@ var nps_lobby = io.on('connection', function (socket) {
 
   // roomScene ~
   socket.on('joinRoom', (roomnum, pnum) => {
+    console.log("joinRoom ~");
     console.log(roomnum,pnum);
     //console.log("!!!!!",roomnum);
     socket.join(roomnum);
     updateSocket(roomnum, socket.id);
-
     //console.log("befo\n",rooms);
     updateRoomsInfo();
+    rooms[roomnum].player.push({socketID:socket.id, pnum:pnum});
     //console.log("after\n",rooms);
     socket.broadcast.emit('aswrooms', rooms);
     io.emit('broadcastInfo');
 
-    // console.log("joinroom!!!!!");
+    console.log("~ joinRoom");
   });
 
   socket.on('broadcastInfo',()=>{
@@ -172,12 +183,20 @@ var nps_lobby = io.on('connection', function (socket) {
   });
 
   socket.on('leaveRoom', (roomnum,pnum) => {
+    console.log("leaveRoom ~");
     io.to(roomnum).emit('refresh');
     socket.leave(roomnum);
     //var idx=rooms.findIndex(obj => obj.room_id==roomnum);
     //rooms.splice(idx,1);
     updateSocket(-1, socket.id);
     updateRoomsInfo();
+    for(var i = 0; i<rooms[roomnum].player.length;i++)
+    {
+      if(rooms[roomnum].player[i].socketID == socket.id)
+      {
+        rooms[roomnum].player.splice(i,1);
+      }
+    }
     // var clientNum =0;
     // if (io.sockets.adapter.rooms[String(roomnum)]) {
     //   clientNum = io.sockets.adapter.rooms[String(roomnum)].length;
@@ -188,6 +207,7 @@ var nps_lobby = io.on('connection', function (socket) {
     // }
     //console.log(clientNum,rooms);
     socket.broadcast.emit('aswrooms', rooms);
+    console.log("~ leaveRoom");
   });
 
   socket.on('chatting',(roomnum,text,pnum)=>{
@@ -284,8 +304,7 @@ function makeTile() {
 }
 
 function updateRoomsInfo() {
-  console.log("updateRoomsInfo");
-
+  console.log("updateRoomsInfo ~");
   for (var i = 0; i < rooms.length; i++) {
     var clientNum =0;
     var connect_id=rooms[i].room_id;
@@ -301,21 +320,27 @@ function updateRoomsInfo() {
       if (rooms[i].roomstate != ROOMPLAYING) rooms[i].roomstate = ROOMFULL;
     }
   }
+  console.log("~ updateRoomsInfo");
 }
 
 function updateSocket(room_num, name) {
-  console.log("updateSocket!!!!!");
+  console.log("updateSocket ~");
   // info: room_num == 0, not enter / else, enter room
   if (room_num == -1) { // leave room
     sockets.get(name).room_num = NO_ROOM;
     sockets.get(name).enter_state = NOT_ENTER;
     // sockets.set(socket.id, {socket_id:socket.id, socket_name:'SOCKET '+socket_num, room_num:NO_ROOM, enter_state:NOT_ENTER});
+  /*
+  There is Bug
+  TypeError: Cannot set property 'room_num' of undefined
+  */
   } else if (room_num >= 0) {
     sockets.get(name).room_num = room_num;
     sockets.get(name).enter_state = ENTER;
     // sockets.set(socket.id, {socket_id:socket.id, socket_name:'SOCKET '+socket_num, room_num:room_num, enter_state:ENTER});
   }
   //console.log(sockets);
+  console.log("~ updateSocket");
 }
 
 /**

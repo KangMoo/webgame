@@ -176,7 +176,7 @@ var RoomScene = new Phaser.Class({
             })
 
             this.socket.on('gameStart', () => {
-                this.scene.player.state = STATE_READY;
+                this.player.state = STATE_READY;
                 var position = {};
                 if (this.pnum == 1) {
                     position.x = 50 * 1 + 25;
