@@ -166,8 +166,17 @@ var RoomScene = new Phaser.Class({
                 }
                 this.socket.emit('ChgState', this.roomnum, this.player.state, this.pnum);
             })
+            this.socket.on('getSetting', () => {
+                console.log('getSetting Called');
+                this.socket.emit('getSetting', {
+                    roomnum:this.roomnum,
+                    roomname:this.roomname,
+                    pnum:this.pnum
+                }) 
+            })
 
             this.socket.on('gameStart', () => {
+                this.scene.player.state = STATE_READY;
                 var position = {};
                 if (this.pnum == 1) {
                     position.x = 50 * 1 + 25;
@@ -193,6 +202,7 @@ var RoomScene = new Phaser.Class({
                     }
                 );
             })
+
         }
         console.log("roomnum////:",this.roomnum)
         this.socket.emit('joinRoom', this.roomnum, this.pnum);

@@ -25,6 +25,8 @@ var MakeID = function () {
   return '_' + Math.random().toString(36).substr(2, 9);
 };
 // socket ����? ~
+
+const ROOM_MAX_PLAYER = 2;
 const NOT_ENTER = 0;
 const ENTER = 1;
 
@@ -69,7 +71,7 @@ var nps_lobby = io.on('connection', function (socket) {
     // info: room_num == 0, not enter / else, enter room
     sockets.set(socket.id, {socket_id:socket.id, socket_name:'SOCKET '+socket_num, room_num:NO_ROOM, enter_state:NOT_ENTER});
     socket_num+=1;
-    console.log(sockets);
+    //console.log(sockets);
     // console.log(sockets.get(socket.id).socket_name);
   })
   //~loginScene
@@ -78,7 +80,7 @@ var nps_lobby = io.on('connection', function (socket) {
   socket.on('rqrooms', () => {
     updateRoomsInfo();
     socket.emit('aswrooms', rooms);
-    console.log(rooms);
+    //console.log(rooms);
   });
 
   socket.on('makerooms', () => {
@@ -89,6 +91,7 @@ var nps_lobby = io.on('connection', function (socket) {
     //socket.broadcast.emit('aswrooms', rooms);
   });
   socket.on('enterroom0', (roomnum, userid) => {
+    console.log('this is enterroom0');
     var idx=rooms.findIndex(obj => obj.room_id==roomnum);
     if(idx>=0){
       if (rooms[idx].roomstate == ROOMFULL || rooms[idx].roomstate == ROOMPLAYING) {
@@ -108,6 +111,7 @@ var nps_lobby = io.on('connection', function (socket) {
     }
   });
   socket.on('enterroom', (roomnum, userid) => {
+    console.log('this is enterroom');
     //console.log(rooms,roomnum);
     //console.log(rooms[roomnum]);
     //console.log(rooms[roomnum].roomstate);
@@ -138,15 +142,15 @@ var nps_lobby = io.on('connection', function (socket) {
   // ~lobbyScene
 
   // roomScene ~
-
   socket.on('joinRoom', (roomnum, pnum) => {
-    console.log("!!!!!",roomnum);
+    console.log(roomnum,pnum);
+    //console.log("!!!!!",roomnum);
     socket.join(roomnum);
     updateSocket(roomnum, socket.id);
 
-    console.log("befo\n",rooms);
+    //console.log("befo\n",rooms);
     updateRoomsInfo();
-    console.log("after\n",rooms);
+    //console.log("after\n",rooms);
     socket.broadcast.emit('aswrooms', rooms);
     io.emit('broadcastInfo');
 
@@ -195,7 +199,6 @@ var nps_lobby = io.on('connection', function (socket) {
     var idx=rooms.findIndex(obj => obj.room_id==roomnum);
     rooms[idx].roomstate = ROOMPLAYING;
     rooms[idx].tiles = makeTile();
-    console.log('eeeeeee');
 
     io.to(roomnum).emit('gameStart');
     socket.broadcast.emit('aswrooms', rooms);
@@ -312,7 +315,7 @@ function updateSocket(room_num, name) {
     sockets.get(name).enter_state = ENTER;
     // sockets.set(socket.id, {socket_id:socket.id, socket_name:'SOCKET '+socket_num, room_num:room_num, enter_state:ENTER});
   }
-  console.log(sockets);
+  //console.log(sockets);
 }
 
 /**

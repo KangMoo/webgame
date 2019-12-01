@@ -50,7 +50,7 @@ var LobbyScene = new Phaser.Class({
             });
 
             this.socket.on('serverMsg', (Msg) => {
-                var txt = this.scene.add.bitmapText(400, 600 - 100, 'fontwhite', Msg);
+                var txt = this.scene.add.bitmapText(400, 600 - 50, 'fontwhite', Msg);
                 txt.setOrigin(0.5).setCenterAlign();
                 var tw = this.scene.tweens.add(
                     {
