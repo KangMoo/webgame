@@ -131,10 +131,11 @@ var nps_lobby = io.on('connection', function (socket) {
         else
         {
           //Garbage Code!! Change It Later!!
+          var idx=rooms.findIndex(obj => obj.room_id==roomnum);
           console.log('roomnumtest~')
-          console.log(rooms[roomnum]);
+          console.log(rooms[idx]);
           console.log('~roomnumtest')
-          if(rooms[roomnum].player[0].pnum ==1)
+          if(rooms[idx].player[0].pnum ==1)
           {
             io.to(socket.id).emit('ChangeRoomScene', roomnum, rooms[idx].room_name,2);
           }
@@ -160,7 +161,8 @@ var nps_lobby = io.on('connection', function (socket) {
     updateSocket(roomnum, socket.id);
     //console.log("befo\n",rooms);
     updateRoomsInfo();
-    rooms[roomnum].player.push({socketID:socket.id, pnum:pnum});
+    var idx=rooms.findIndex(obj => obj.room_id==roomnum);
+    rooms[idx].player.push({socketID:socket.id, pnum:pnum});
     //console.log("after\n",rooms);
     socket.broadcast.emit('aswrooms', rooms);
     io.emit('broadcastInfo');
@@ -186,17 +188,18 @@ var nps_lobby = io.on('connection', function (socket) {
     console.log("leaveRoom ~");
     io.to(roomnum).emit('refresh');
     socket.leave(roomnum);
-    //var idx=rooms.findIndex(obj => obj.room_id==roomnum);
+    var idx=rooms.findIndex(obj => obj.room_id==roomnum);
     //rooms.splice(idx,1);
     updateSocket(-1, socket.id);
-    updateRoomsInfo();
-    for(var i = 0; i<rooms[roomnum].player.length;i++)
+
+    for(var i = 0; i<rooms[idx].player.length;i++)
     {
-      if(rooms[roomnum].player[i].socketID == socket.id)
+      if(rooms[idx].player[i].socketID == socket.id)
       {
-        rooms[roomnum].player.splice(i,1);
+        rooms[idx].player.splice(i,1);
       }
     }
+    updateRoomsInfo();
     // var clientNum =0;
     // if (io.sockets.adapter.rooms[String(roomnum)]) {
     //   clientNum = io.sockets.adapter.rooms[String(roomnum)].length;
